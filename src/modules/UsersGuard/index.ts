@@ -7,6 +7,7 @@
 export { default as LoginForm } from './admin/components/LoginForm';
 export { useAuth } from './admin/hooks/useAuth';
 export { adminAuthService } from './admin/services/authService';
+export { initUsersGuardModule } from './admin/init';
 
 // Types
 export type {
