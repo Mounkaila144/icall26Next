@@ -29,6 +29,7 @@ class MenuService {
       path: generatedPath,
       order: backendItem.lb, // Use left boundary as order
       module: backendItem.module || undefined,
+      name: backendItem.name || undefined, // Store original name from database
       is_active: backendItem.status === 'ACTIVE',
       is_visible: backendItem.status !== 'DELETED',
       created_at: backendItem.created_at,

@@ -48,6 +48,7 @@ export interface MenuItem {
 
   /**
    * Route path (e.g., '/admin/dashboard')
+   * Generated dynamically from module and name
    */
   path?: string;
 
@@ -77,9 +78,14 @@ export interface MenuItem {
   is_visible: boolean;
 
   /**
-   * Module that owns this menu
+   * Module that owns this menu (from database, snake_case)
    */
   module?: string;
+
+  /**
+   * Menu name (from database, may have numeric prefix)
+   */
+  name?: string;
 
   /**
    * Permission required to view this menu

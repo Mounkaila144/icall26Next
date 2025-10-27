@@ -10,10 +10,26 @@ export interface RouteConfig {
 }
 
 /**
+ * Remove numeric prefixes from menu names
+ * Examples:
+ *   0000_users_product → users_product
+ *   0010_contracts_list1 → contracts_list1
+ *   10_meetings → meetings
+ */
+function removeNumericPrefix(str: string): string {
+  if (!str) return '';
+  // Remove leading digits and underscore (e.g., "0010_" or "10_")
+  return str.replace(/^\d+_/, '');
+}
+
+/**
  * Convert snake_case or camelCase to kebab-case
  */
 function toKebabCase(str: string): string {
-  return str
+  // First remove numeric prefixes
+  const cleaned = removeNumericPrefix(str);
+
+  return cleaned
     .replace(/([a-z])([A-Z])/g, '$1-$2') // camelCase to kebab-case
     .replace(/_/g, '-') // snake_case to kebab-case
     .toLowerCase();
