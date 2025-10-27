@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Menu configuration (keep template, ignore actual config)
+#config/menu-configuration.json

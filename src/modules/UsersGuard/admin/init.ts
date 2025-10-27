@@ -1,14 +1,13 @@
-import { menuRegistryService } from '@/src/modules/MenuRegistry';
-import { usersGuardMenuConfig } from './config/menu.config';
-
 /**
  * Initialize UsersGuard module
- * Register menus and settings
+ *
+ * Note: Menu registration is now handled by the Dashboard module
+ * which loads menus from the Laravel backend API.
+ * Menus should be created via the admin interface or seeded in the database.
  */
 export const initUsersGuardModule = () => {
-  // Register menus
-  menuRegistryService.registerModule(usersGuardMenuConfig);
-
-  // You can add other initialization logic here
+  // Add initialization logic here if needed
   // e.g., register event listeners, validators, etc.
+
+  console.log('UsersGuard module initialized');
 };

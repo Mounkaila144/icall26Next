@@ -1,8 +1,18 @@
-import { ModuleMenuConfig } from '@/src/modules/MenuRegistry';
-
 /**
  * Menu configuration for UsersGuard module
+ *
+ * NOTE: This file is kept for reference only.
+ * Menus are now managed via the Dashboard module and stored in the Laravel backend.
+ * Create these menus via the admin interface at /admin/settings/menus
  */
+
+// Legacy type definition for reference
+type ModuleMenuConfig = {
+  module: string;
+  menuItems?: any[];
+  settingsItems?: any[];
+};
+
 export const usersGuardMenuConfig: ModuleMenuConfig = {
   module: 'UsersGuard',
 

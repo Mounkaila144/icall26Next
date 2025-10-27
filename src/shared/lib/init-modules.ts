@@ -1,10 +1,11 @@
 /**
  * Global module initialization
- * This file registers all modules and their menus
+ * This file initializes all modules
+ *
+ * Note: Menu management is now handled by the Dashboard module
+ * which loads menus from the Laravel backend API
  */
 
-import { menuRegistryService } from '@/src/modules/MenuRegistry';
-import { coreMenusConfig } from '@/src/shared/config/core-menus.config';
 import { initUsersGuardModule } from '@/src/modules/UsersGuard';
 
 /**
@@ -12,9 +13,6 @@ import { initUsersGuardModule } from '@/src/modules/UsersGuard';
  * Call this once at application startup
  */
 export const initializeModules = () => {
-  // Register core menus (Dashboard, Settings, etc.)
-  menuRegistryService.registerModule(coreMenusConfig);
-
   // Initialize UsersGuard module
   initUsersGuardModule();
 
