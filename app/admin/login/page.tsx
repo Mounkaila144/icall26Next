@@ -1,8 +1,8 @@
 import { LoginForm } from '@/src/modules/UsersGuard';
 
 export const metadata = {
-  title: 'Admin Login',
-  description: 'Login to admin panel',
+  title: 'iCall26 - Connexion Admin',
+  description: 'Connexion au portail administrateur iCall26',
 };
 
 export default function AdminLoginPage() {
