@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(mkdir:*)",
-      "Read(//c/laragon/www/backend-api/Modules/**)"
+      "Read(//c/laragon/www/backend-api/Modules/**)",
+      "Bash(tree:*)"
     ],
     "deny": [],
     "ask": []
