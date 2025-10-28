@@ -12,8 +12,16 @@ interface TenantContextType {
 const TenantContext = createContext<TenantContextType | undefined>(undefined);
 
 export function TenantProvider({ children }: { children: ReactNode }) {
-    const [tenantId, setTenantId] = useState<string | null>(null);
-    const [domain, setDomain] = useState<string | null>(null);
+    const [tenantId, setTenantIdState] = useState<string | null>(null);
+    const [domain, setDomainState] = useState<string | null>(null);
+
+    const setTenantId = (id: string | null) => {
+        setTenantIdState(id);
+    };
+
+    const setDomain = (d: string | null) => {
+        setDomainState(d);
+    };
 
     // Load tenant data from localStorage on mount
     useEffect(() => {
@@ -21,11 +29,15 @@ export function TenantProvider({ children }: { children: ReactNode }) {
             const storedTenantId = localStorage.getItem('tenant_id');
             const storedDomain = localStorage.getItem('tenant_domain');
 
-            if (storedTenantId) setTenantId(storedTenantId);
-            if (storedDomain) setDomain(storedDomain);
+            console.log('🔍 [TenantProvider] Loaded from storage:', {
+                tenantId: storedTenantId,
+                domain: storedDomain || window.location.hostname
+            });
 
-            // Also detect domain from hostname if not stored
-            if (!storedDomain) {
+            if (storedTenantId) setTenantId(storedTenantId);
+            if (storedDomain) {
+                setDomain(storedDomain);
+            } else {
                 setDomain(window.location.hostname);
             }
         }

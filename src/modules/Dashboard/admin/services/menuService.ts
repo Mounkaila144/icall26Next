@@ -46,16 +46,13 @@ class MenuService {
    * Build hierarchy from nested set model (lb, rb, level)
    */
   private buildNestedSetHierarchy(items: BackendMenuItem[]): MenuItem[] {
-    console.log('🔍 [buildNestedSetHierarchy] Input items:', items);
-    console.log('🔍 [buildNestedSetHierarchy] Number of items:', items.length);
+    console.log('🔍 [buildNestedSetHierarchy] Building hierarchy from', items.length, 'items');
 
     // Transform all items first
     const transformed = items.map(item => this.transformMenuItem(item));
-    console.log('🔍 [buildNestedSetHierarchy] Transformed items:', transformed);
 
     // Sort by left boundary (lb)
     transformed.sort((a, b) => parseInt(a.order.toString()) - parseInt(b.order.toString()));
-    console.log('🔍 [buildNestedSetHierarchy] Sorted items:', transformed);
 
     // Build hierarchy using level
     const itemsWithLevel = items.map((item, index) => ({
@@ -64,18 +61,15 @@ class MenuService {
       lb: item.lb,
       rb: item.rb,
     }));
-    console.log('🔍 [buildNestedSetHierarchy] Items with level:', itemsWithLevel);
 
     const root: MenuItem[] = [];
     const stack: Array<MenuItem & { level: number }> = [];
+    let skippedRootNodes = 0;
 
-    itemsWithLevel.forEach((item, index) => {
-      console.log(`🔍 [buildNestedSetHierarchy] Processing item ${index}:`, item);
-      console.log(`🔍 [buildNestedSetHierarchy] Item level: ${item.level}, label: ${item.label}`);
-
+    itemsWithLevel.forEach((item) => {
       // Skip root node (level 0)
       if (item.level === 0) {
-        console.log(`⏭️ [buildNestedSetHierarchy] Skipping root node (level 0): ${item.label}`);
+        skippedRootNodes++;
         return;
       }
 
@@ -102,12 +96,10 @@ class MenuService {
 
       if (stack.length === 0) {
         // Top level item
-        console.log(`✅ [buildNestedSetHierarchy] Adding to root: ${menuItem.label}`);
         root.push(menuItem);
       } else {
         // Child item
         const parent = stack[stack.length - 1];
-        console.log(`✅ [buildNestedSetHierarchy] Adding as child of ${parent.label}: ${menuItem.label}`);
         if (!parent.children) {
           parent.children = [];
         }
@@ -117,8 +109,13 @@ class MenuService {
       stack.push({ ...menuItem, level: item.level });
     });
 
-    console.log('✅ [buildNestedSetHierarchy] Final root menus:', root);
-    console.log('✅ [buildNestedSetHierarchy] Number of root items:', root.length);
+    console.log('✅ [buildNestedSetHierarchy] Built hierarchy:', {
+      totalItems: items.length,
+      skippedRootNodes,
+      rootMenus: root.length,
+      rootMenuLabels: root.map(m => m.label)
+    });
+
     return root;
   }
   /**
@@ -161,36 +158,22 @@ class MenuService {
    * This is what we'll use for displaying menus
    */
   async getMenuTree(tenantId?: string): Promise<MenuItem[]> {
-    console.log('🔍 [menuService] getMenuTree called with tenantId:', tenantId);
+    console.log('🔍 [menuService] Fetching menu tree, lang:', this.getCurrentLang());
     const client = createApiClient(tenantId);
     const lang = this.getCurrentLang();
-    console.log('🔍 [menuService] Current language:', lang);
 
-    console.log('🔍 [menuService] Making API request to /admin/menus/tree');
     const response = await client.get<ApiResponse<BackendMenuItem[]>>('/admin/menus/tree', {
-      params: {
-        lang: lang, // Request translated labels
-      },
+      params: { lang },
     });
-    console.log('✅ [menuService] API response received:', response);
-    console.log('✅ [menuService] Response status:', response.status);
-    console.log('✅ [menuService] Response data:', response.data);
 
     const backendItems = response.data.data || [];
-    console.log('✅ [menuService] Backend items extracted:', backendItems);
-    console.log('✅ [menuService] Number of backend items:', backendItems.length);
-    console.log('✅ [menuService] First item sample:', backendItems[0]);
+    console.log('✅ [menuService] Received', backendItems.length, 'items from API');
 
-    // Transform and build hierarchy
-    console.log('🔍 [menuService] Building hierarchy from backend items...');
     try {
       const hierarchy = this.buildNestedSetHierarchy(backendItems);
-      console.log('✅ [menuService] Hierarchy built:', hierarchy);
-      console.log('✅ [menuService] Number of root menus:', hierarchy.length);
       return hierarchy;
     } catch (error) {
-      console.error('❌ [menuService] Error in buildNestedSetHierarchy:', error);
-      console.error('❌ [menuService] Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+      console.error('❌ [menuService] Error building hierarchy:', error);
       throw error;
     }
   }
