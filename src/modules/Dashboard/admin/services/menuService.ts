@@ -179,14 +179,20 @@ class MenuService {
     const backendItems = response.data.data || [];
     console.log('✅ [menuService] Backend items extracted:', backendItems);
     console.log('✅ [menuService] Number of backend items:', backendItems.length);
+    console.log('✅ [menuService] First item sample:', backendItems[0]);
 
     // Transform and build hierarchy
     console.log('🔍 [menuService] Building hierarchy from backend items...');
-    const hierarchy = this.buildNestedSetHierarchy(backendItems);
-    console.log('✅ [menuService] Hierarchy built:', hierarchy);
-    console.log('✅ [menuService] Number of root menus:', hierarchy.length);
-
-    return hierarchy;
+    try {
+      const hierarchy = this.buildNestedSetHierarchy(backendItems);
+      console.log('✅ [menuService] Hierarchy built:', hierarchy);
+      console.log('✅ [menuService] Number of root menus:', hierarchy.length);
+      return hierarchy;
+    } catch (error) {
+      console.error('❌ [menuService] Error in buildNestedSetHierarchy:', error);
+      console.error('❌ [menuService] Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+      throw error;
+    }
   }
 
   /**
