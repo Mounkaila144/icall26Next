@@ -3,12 +3,10 @@
 
 import { useState, FormEvent, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { useTenant } from '@/src/shared/lib/tenant-context';
 import Image from 'next/image';
 
 export default function LoginForm() {
     const { login, isLoading, error } = useAuth();
-    const { domain } = useTenant();
 
     const [formData, setFormData] = useState({
         username: '',
