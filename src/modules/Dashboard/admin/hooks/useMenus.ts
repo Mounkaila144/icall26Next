@@ -19,17 +19,22 @@ export const useMenus = () => {
    * Fetch all menus (hierarchical tree from backend)
    */
   const fetchMenus = useCallback(async () => {
+    console.log('🔍 [useMenus] fetchMenus called with tenantId:', tenantId);
     try {
       setIsLoading(true);
       setError(null);
+      console.log('🔍 [useMenus] Calling menuService.getMenuTree...');
       const data = await menuService.getMenuTree(tenantId || undefined);
+      console.log('✅ [useMenus] Menus received from service:', data);
+      console.log('✅ [useMenus] Number of menus:', data?.length);
       setMenus(data);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch menus';
       setError(errorMessage);
-      console.error('Error fetching menus:', err);
+      console.error('❌ [useMenus] Error fetching menus:', err);
     } finally {
       setIsLoading(false);
+      console.log('🔍 [useMenus] fetchMenus completed, isLoading set to false');
     }
   }, [tenantId]);
 

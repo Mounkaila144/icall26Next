@@ -89,9 +89,19 @@ export const Sidebar: React.FC = () => {
   const [expandedMenus, setExpandedMenus] = useState<Set<string>>(new Set());
   const [hoveredMenu, setHoveredMenu] = useState<string | null>(null);
 
+  // Debug logs
+  console.log('🔍 [Sidebar] Component render');
+  console.log('🔍 [Sidebar] isLoading:', isLoading);
+  console.log('🔍 [Sidebar] error:', error);
+  console.log('🔍 [Sidebar] menus:', menus);
+  console.log('🔍 [Sidebar] menus.length:', menus?.length);
+  console.log('🔍 [Sidebar] pathname:', pathname);
+
   // Ouvrir automatiquement le deuxième menu (index 1) par défaut
   React.useEffect(() => {
+    console.log('🔍 [Sidebar] useEffect triggered, menus.length:', menus.length);
     if (menus.length > 1 && menus[1].children && menus[1].children.length > 0) {
+      console.log('✅ [Sidebar] Auto-expanding menu:', menus[1]);
       setExpandedMenus(new Set([menus[1].id]));
     }
   }, [menus]);
@@ -138,12 +148,17 @@ export const Sidebar: React.FC = () => {
   };
 
   const renderMenuItem = (menu: MenuItem, level: number = 0): React.ReactNode => {
+    console.log(`🔍 [renderMenuItem] Called for menu: ${menu.label}, level: ${level}`);
+    console.log(`🔍 [renderMenuItem] is_visible: ${menu.is_visible}, is_active: ${menu.is_active}`);
+
     if (!menu.is_visible || !menu.is_active) {
+      console.log(`⏭️ [renderMenuItem] Skipping menu ${menu.label} - not visible or not active`);
       return null;
     }
 
     // En mode réduit, ne pas afficher les sous-menus (level > 0)
     if (isCollapsed && level > 0) {
+      console.log(`⏭️ [renderMenuItem] Skipping menu ${menu.label} - collapsed mode and level > 0`);
       return null;
     }
 
@@ -151,6 +166,8 @@ export const Sidebar: React.FC = () => {
     const isExpanded = expandedMenus.has(menu.id);
     const active = isActive(menu);
     const isHovered = hoveredMenu === menu.id;
+
+    console.log(`✅ [renderMenuItem] Rendering menu: ${menu.label}, hasChildren: ${hasChildren}, isExpanded: ${isExpanded}, active: ${active}`);
 
     const badgeVariant = menu.badge?.variant ?? 'primary';
     const badgeColors: Record<string, { background: string; color: string; border: string }> = {
@@ -365,6 +382,7 @@ export const Sidebar: React.FC = () => {
   };
 
   if (isLoading) {
+    console.log('⏳ [Sidebar] Rendering loading state');
     return (
       <div
         style={{
@@ -391,6 +409,7 @@ export const Sidebar: React.FC = () => {
   }
 
   if (error) {
+    console.log('❌ [Sidebar] Rendering error state:', error);
     return (
       <div
         style={{
@@ -410,6 +429,7 @@ export const Sidebar: React.FC = () => {
   }
 
   if (menus.length === 0) {
+    console.log('⚠️ [Sidebar] Rendering empty state - no menus available');
     return (
       <div
         style={{
@@ -538,18 +558,34 @@ export const Sidebar: React.FC = () => {
         </button>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '20px' }}>
-          {isCollapsed
-            ? // En mode réduit, afficher tous les menus et leurs enfants à plat
-              menus.slice(1).flatMap((menu) => {
-                if (menu.children && menu.children.length > 0) {
-                  // Afficher le parent et tous ses enfants
-                  return [menu, ...menu.children.filter(child => child.is_visible && child.is_active)];
-                }
-                return [menu];
-              }).map((menu) => renderMenuItem(menu, 0))
-            : // En mode étendu, afficher normalement
-              menus.slice(1).map((menu) => renderMenuItem(menu))
-          }
+          {(() => {
+            console.log('🔍 [Sidebar] Rendering menus section');
+            console.log('🔍 [Sidebar] isCollapsed:', isCollapsed);
+            console.log('🔍 [Sidebar] menus to render (slice(1)):', menus.slice(1));
+
+            const menusToRender = isCollapsed
+              ? // En mode réduit, afficher tous les menus et leurs enfants à plat
+                menus.slice(1).flatMap((menu) => {
+                  console.log('🔍 [Sidebar] Processing menu for collapsed mode:', menu);
+                  if (menu.children && menu.children.length > 0) {
+                    // Afficher le parent et tous ses enfants
+                    const result = [menu, ...menu.children.filter(child => child.is_visible && child.is_active)];
+                    console.log('🔍 [Sidebar] Menu with children, result:', result);
+                    return result;
+                  }
+                  return [menu];
+                })
+              : // En mode étendu, afficher normalement
+                menus.slice(1);
+
+            console.log('✅ [Sidebar] Final menusToRender:', menusToRender);
+            console.log('✅ [Sidebar] Number of menus to render:', menusToRender.length);
+
+            return menusToRender.map((menu, index) => {
+              console.log(`🔍 [Sidebar] Calling renderMenuItem for menu ${index}:`, menu);
+              return renderMenuItem(menu, isCollapsed ? 0 : undefined);
+            });
+          })()}
         </div>
       </nav>
     </>
