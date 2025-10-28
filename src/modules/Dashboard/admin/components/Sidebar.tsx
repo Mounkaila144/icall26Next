@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useMenus } from '../hooks/useMenus';
 import { useSidebar } from '@/src/shared/lib/sidebar-context';
@@ -96,10 +97,10 @@ export const Sidebar: React.FC = () => {
   }, [menus]);
 
   const palette = {
-    accentGradient: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 45%, #a855f7 100%)',
-    accentHover: 'rgba(99, 102, 241, 0.08)',
-    accentSoft: 'rgba(99, 102, 241, 0.06)',
-    accentStrong: '#6366f1',
+    accentGradient: '#2563eb',
+    accentHover: 'rgba(37, 99, 235, 0.08)',
+    accentSoft: 'rgba(37, 99, 235, 0.06)',
+    accentStrong: '#1e40af',
     neutralBorder: 'rgba(226, 232, 240, 0.8)',
     textPrimary: '#1e293b',
     textMuted: '#64748b',
@@ -154,9 +155,9 @@ export const Sidebar: React.FC = () => {
     const badgeVariant = menu.badge?.variant ?? 'primary';
     const badgeColors: Record<string, { background: string; color: string; border: string }> = {
       primary: {
-        background: 'rgba(99, 102, 241, 0.18)',
-        color: '#e0e7ff',
-        border: 'rgba(99, 102, 241, 0.35)',
+        background: 'rgba(37, 99, 235, 0.18)',
+        color: '#dbeafe',
+        border: 'rgba(37, 99, 235, 0.35)',
       },
       success: {
         background: 'rgba(16, 185, 129, 0.16)',
@@ -169,9 +170,9 @@ export const Sidebar: React.FC = () => {
         border: 'rgba(245, 158, 11, 0.3)',
       },
       danger: {
-        background: 'rgba(248, 113, 113, 0.18)',
+        background: 'rgba(220, 38, 38, 0.18)',
         color: '#fecaca',
-        border: 'rgba(248, 113, 113, 0.35)',
+        border: 'rgba(220, 38, 38, 0.35)',
       },
     };
 
@@ -179,34 +180,34 @@ export const Sidebar: React.FC = () => {
 
     const styles = {
       item: {
-        marginBottom: level === 0 ? '8px' : '4px',
+        marginBottom: level === 0 ? '4px' : '2px',
         transition: 'transform 0.18s ease',
       },
       button: {
         display: 'flex',
         alignItems: 'center',
-        gap: '10px',
+        gap: '8px',
         width: '100%',
-        padding: isCollapsed && level === 0 ? '10px' : level === 0 ? '10px 14px' : `${9 + level * 2}px 14px`,
+        padding: isCollapsed && level === 0 ? '6px' : level === 0 ? '8px 10px' : `${6 + level * 2}px 10px`,
         background: active
           ? palette.accentGradient
           : isHovered
           ? palette.accentHover
           : 'transparent',
         color: active ? '#ffffff' : palette.textPrimary,
-        border: active ? '1px solid rgba(139, 92, 246, 0.3)' : `1px solid transparent`,
-        borderRadius: level === 0 ? '12px' : '10px',
+        border: active ? '1px solid rgba(37, 99, 235, 0.3)' : `1px solid transparent`,
+        borderRadius: level === 0 ? '8px' : '6px',
         cursor: hasChildren || menu.path ? 'pointer' : 'default',
-        fontSize: level === 0 ? '14px' : '13px',
+        fontSize: level === 0 ? '13px' : '12px',
         fontWeight: active ? '600' : '500',
         textDecoration: 'none',
         transition: 'all 0.22s ease',
         position: 'relative' as const,
         overflow: 'hidden' as const,
         boxShadow: active
-          ? '0 8px 16px rgba(99, 102, 241, 0.2)'
+          ? '0 4px 8px rgba(37, 99, 235, 0.15)'
           : isHovered
-          ? '0 2px 8px rgba(0, 0, 0, 0.04)'
+          ? '0 2px 4px rgba(0, 0, 0, 0.04)'
           : 'none',
         transform: isHovered && !active ? 'translateX(2px)' : 'translateX(0)',
         justifyContent: isCollapsed && level === 0 ? 'center' : 'flex-start',
@@ -215,12 +216,12 @@ export const Sidebar: React.FC = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        width: level === 0 ? '36px' : '32px',
-        height: level === 0 ? '36px' : '32px',
-        borderRadius: '10px',
+        width: level === 0 ? '28px' : '24px',
+        height: level === 0 ? '28px' : '24px',
+        borderRadius: '6px',
         backgroundColor: active ? 'rgba(255, 255, 255, 0.25)' : palette.accentSoft,
         color: active ? '#ffffff' : palette.accentStrong,
-        fontSize: level === 0 ? '18px' : '16px',
+        fontSize: level === 0 ? '14px' : '13px',
         fontWeight: 600,
         flexShrink: 0 as const,
         transition: 'all 0.2s ease',
@@ -241,8 +242,8 @@ export const Sidebar: React.FC = () => {
         display: 'inline-flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '2px 8px',
-        fontSize: '10px',
+        padding: '2px 6px',
+        fontSize: '9px',
         fontWeight: 600,
         borderRadius: '999px',
         textTransform: 'uppercase' as const,
@@ -257,13 +258,13 @@ export const Sidebar: React.FC = () => {
         transition: 'transform 0.22s ease',
       },
       children: {
-        marginTop: '6px',
-        marginLeft: level === 0 ? '10px' : '6px',
-        paddingLeft: '16px',
-        borderLeft: `2px solid ${palette.neutralBorder}`,
+        marginTop: '4px',
+        marginLeft: level === 0 ? '8px' : '4px',
+        paddingLeft: '12px',
+        borderLeft: `1px solid ${palette.neutralBorder}`,
         display: 'flex',
         flexDirection: 'column' as const,
-        gap: '4px',
+        gap: '2px',
         animation: 'slideDown 0.22s ease',
       },
     };
@@ -379,7 +380,7 @@ export const Sidebar: React.FC = () => {
             style={{
               height: '52px',
               borderRadius: '12px',
-              background: 'linear-gradient(90deg, rgba(226, 232, 240, 0.5) 0%, rgba(99, 102, 241, 0.08) 45%, rgba(226, 232, 240, 0.5) 100%)',
+              background: 'linear-gradient(90deg, rgba(226, 232, 240, 0.5) 0%, rgba(37, 99, 235, 0.08) 45%, rgba(226, 232, 240, 0.5) 100%)',
               backgroundSize: '200% 100%',
               animation: 'shimmer 1.8s ease-in-out infinite',
             }}
@@ -477,6 +478,28 @@ export const Sidebar: React.FC = () => {
           transition: 'width 0.3s ease',
         }}
       >
+        {/* Logo */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: isCollapsed ? 'center' : 'flex-start',
+          padding: isCollapsed ? '0' : '0 12px',
+          marginBottom: '20px',
+          transition: 'all 0.3s ease',
+        }}>
+          <Image
+            src="/logo.svg"
+            alt="iCall26 Logo"
+            width={isCollapsed ? 40 : 120}
+            height={isCollapsed ? 40 : 35}
+            style={{
+              transition: 'all 0.3s ease',
+              objectFit: 'contain',
+            }}
+            priority
+          />
+        </div>
+
         <button
           onClick={toggleSidebar}
           style={{
@@ -500,7 +523,7 @@ export const Sidebar: React.FC = () => {
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.background = palette.accentHover;
-            e.currentTarget.style.boxShadow = '0 2px 8px rgba(99, 102, 241, 0.15)';
+            e.currentTarget.style.boxShadow = '0 2px 8px rgba(37, 99, 235, 0.15)';
             e.currentTarget.style.transform = 'scale(1.05)';
           }}
           onMouseLeave={(e) => {
@@ -514,7 +537,7 @@ export const Sidebar: React.FC = () => {
           {isCollapsed ? '→' : '←'}
         </button>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '50px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '20px' }}>
           {isCollapsed
             ? // En mode réduit, afficher tous les menus et leurs enfants à plat
               menus.slice(1).flatMap((menu) => {

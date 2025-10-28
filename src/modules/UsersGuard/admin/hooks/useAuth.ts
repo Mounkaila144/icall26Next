@@ -65,7 +65,7 @@ export const useAuth = (): UseAuthReturn => {
                     isLoading: false,
                 });
 
-                router.push('/admin/dashboard');
+                router.push('/admin/customers-contracts/contracts-list1');
             } else {
                 throw new Error(response.message || 'Login failed');
             }

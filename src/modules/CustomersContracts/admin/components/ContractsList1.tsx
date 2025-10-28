@@ -6,54 +6,8 @@
 
 import React, { useState } from 'react';
 import { useContracts } from '../hooks/useContracts';
+import { useSidebar } from '@/src/shared/lib/sidebar-context';
 import type { CustomerContract } from '../../types';
-
-/**
- * StatsCard Component - Reusable card for displaying statistics
- */
-interface StatsCardProps {
-  title: string;
-  value: number | string;
-  color: string;
-  icon?: string;
-}
-
-const StatsCard: React.FC<StatsCardProps> = ({ title, value, color, icon }) => {
-  const cardStyle: React.CSSProperties = {
-    background: 'white',
-    padding: '20px',
-    borderRadius: '12px',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-    border: `2px solid ${color}`,
-    flex: '1',
-    minWidth: '200px',
-  };
-
-  const titleStyle: React.CSSProperties = {
-    fontSize: '14px',
-    color: '#666',
-    marginBottom: '8px',
-  };
-
-  const valueStyle: React.CSSProperties = {
-    fontSize: '32px',
-    fontWeight: 'bold',
-    color: color,
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-  };
-
-  return (
-    <div style={cardStyle}>
-      <div style={titleStyle}>{title}</div>
-      <div style={valueStyle}>
-        {icon && <span>{icon}</span>}
-        {value}
-      </div>
-    </div>
-  );
-};
 
 /**
  * StatusBadge Component - Display status with color and icon
@@ -92,7 +46,6 @@ const StatusBadge: React.FC<StatusBadgeProps> = ({ name, color, icon }) => {
 export default function ContractsList1() {
   const {
     contracts,
-    stats,
     loading,
     error,
     currentPage,
@@ -107,13 +60,19 @@ export default function ContractsList1() {
     deleteContract,
   } = useContracts();
 
+  const { isCollapsed } = useSidebar();
   const [searchTerm, setSearchTerm] = useState('');
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   // Styles
   const containerStyle: React.CSSProperties = {
     padding: '24px',
-    maxWidth: '1400px',
+    width: '100%',
+    maxWidth: isCollapsed ? 'calc(100vw - 120px)' : 'calc(100vw - 280px)', // Ajustement dynamique selon l'état du sidebar
     margin: '0 auto',
+    overflow: 'hidden',
+    boxSizing: 'border-box',
+    transition: 'max-width 0.3s ease', // Transition fluide lors du toggle
   };
 
   const headerStyle: React.CSSProperties = {
@@ -134,56 +93,58 @@ export default function ContractsList1() {
     color: '#666',
   };
 
-  const statsGridStyle: React.CSSProperties = {
-    display: 'flex',
-    gap: '16px',
-    marginBottom: '24px',
-    flexWrap: 'wrap',
-  };
-
   const cardStyle: React.CSSProperties = {
     background: 'white',
     padding: '24px',
     borderRadius: '12px',
     boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
     marginBottom: '24px',
+    width: '100%',
+    boxSizing: 'border-box',
+    overflow: 'hidden',
   };
 
   const filtersSectionStyle: React.CSSProperties = {
     display: 'flex',
-    gap: '16px',
+    gap: '12px',
     flexWrap: 'wrap',
-    marginBottom: '16px',
+    padding: '16px',
+    background: '#f8f9fa',
+    borderRadius: '8px',
+    marginTop: '12px',
   };
 
   const inputStyle: React.CSSProperties = {
-    padding: '10px 14px',
+    padding: '8px 12px',
     border: '1px solid #ddd',
-    borderRadius: '8px',
-    fontSize: '14px',
+    borderRadius: '6px',
+    fontSize: '13px',
     flex: '1',
-    minWidth: '200px',
+    minWidth: '180px',
+    maxWidth: '250px',
   };
 
   const selectStyle: React.CSSProperties = {
-    padding: '10px 14px',
+    padding: '8px 12px',
     border: '1px solid #ddd',
-    borderRadius: '8px',
-    fontSize: '14px',
-    minWidth: '150px',
+    borderRadius: '6px',
+    fontSize: '13px',
+    minWidth: '140px',
+    maxWidth: '180px',
     cursor: 'pointer',
   };
 
   const buttonStyle: React.CSSProperties = {
-    padding: '10px 20px',
+    padding: '8px 16px',
     background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
     color: 'white',
     border: 'none',
-    borderRadius: '8px',
-    fontSize: '14px',
+    borderRadius: '6px',
+    fontSize: '13px',
     fontWeight: '600',
     cursor: 'pointer',
     transition: 'transform 0.2s',
+    whiteSpace: 'nowrap',
   };
 
   const secondaryButtonStyle: React.CSSProperties = {
@@ -191,25 +152,98 @@ export default function ContractsList1() {
     background: '#6c757d',
   };
 
+  const filterToggleButtonStyle: React.CSSProperties = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    padding: '10px 16px',
+    background: 'linear-gradient(135deg, #667eea15 0%, #764ba215 100%)',
+    color: '#667eea',
+    border: '1px solid #667eea40',
+    borderRadius: '8px',
+    fontSize: '13px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'all 0.2s',
+    width: '100%',
+    justifyContent: 'space-between',
+  };
+
+  const tableContainerStyle: React.CSSProperties = {
+    overflowX: 'auto',
+    overflowY: 'auto',
+    maxHeight: '70vh',
+    border: '1px solid #e0e0e0',
+    borderRadius: '8px',
+    position: 'relative',
+    boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+    width: '100%',
+  };
+
   const tableStyle: React.CSSProperties = {
     width: '100%',
-    borderCollapse: 'collapse',
-    overflowX: 'auto',
+    borderCollapse: 'separate',
+    borderSpacing: '0',
+    minWidth: 'max-content', // Allow table to be as wide as needed
   };
 
   const thStyle: React.CSSProperties = {
     textAlign: 'left',
-    padding: '12px',
-    borderBottom: '2px solid #667eea',
+    padding: '12px 10px',
+    background: '#1e40af',
+    color: 'white',
     fontWeight: '600',
-    color: '#333',
-    fontSize: '14px',
+    fontSize: '12px',
+    position: 'sticky',
+    top: 0,
+    zIndex: 10,
+    borderRight: '1px solid rgba(255,255,255,0.2)',
+    whiteSpace: 'nowrap',
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+  };
+
+  const thStickyStyle: React.CSSProperties = {
+    ...thStyle,
+    left: 0,
+    zIndex: 20,
+    boxShadow: '2px 0 6px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.1)',
+    background: '#1e3a8a',
   };
 
   const tdStyle: React.CSSProperties = {
-    padding: '12px',
-    borderBottom: '1px solid #eee',
-    fontSize: '14px',
+    padding: '10px',
+    borderBottom: '1px solid #f0f0f0',
+    borderRight: '1px solid #f5f5f5',
+    fontSize: '13px',
+    backgroundColor: 'white',
+    whiteSpace: 'nowrap',
+  };
+
+  const tdStickyStyle: React.CSSProperties = {
+    ...tdStyle,
+    position: 'sticky',
+    left: 0,
+    backgroundColor: '#fafafa',
+    fontWeight: '600',
+    zIndex: 9,
+    boxShadow: '2px 0 5px rgba(0,0,0,0.05)',
+  };
+
+  const groupHeaderStyle: React.CSSProperties = {
+    ...thStyle,
+    background: '#2563eb',
+    textAlign: 'center',
+    fontSize: '12px',
+    fontWeight: '700',
+    letterSpacing: '0.5px',
+    textTransform: 'uppercase',
+    boxShadow: '0 3px 6px rgba(0, 0, 0, 0.15)',
+    borderBottom: '2px solid rgba(255, 255, 255, 0.3)',
+  };
+
+  const thSecondRowStyle: React.CSSProperties = {
+    ...thStyle,
+    top: '44px', // Position sous la première ligne (hauteur approximative de la première ligne)
   };
 
   const paginationStyle: React.CSSProperties = {
@@ -255,6 +289,14 @@ export default function ContractsList1() {
     transition: 'background 0.2s',
   };
 
+  const badgeStyle: React.CSSProperties = {
+    display: 'inline-block',
+    padding: '4px 12px',
+    borderRadius: '20px',
+    fontSize: '13px',
+    fontWeight: '500',
+  };
+
   // Handlers
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -284,128 +326,6 @@ export default function ContractsList1() {
 
   return (
     <div style={containerStyle}>
-      {/* Header */}
-      <div style={headerStyle}>
-        <h1 style={titleStyle}>Contracts Management</h1>
-        <p style={subtitleStyle}>Manage and track customer contracts</p>
-      </div>
-
-      {/* Statistics */}
-      {stats && (
-        <div style={statsGridStyle}>
-          <StatsCard
-            title="Total Contracts"
-            value={stats.total_contracts}
-            color="#667eea"
-            icon="📋"
-          />
-          <StatsCard
-            title="Signed Contracts"
-            value={stats.total_signed}
-            color="#28a745"
-            icon="✅"
-          />
-          <StatsCard
-            title="Unsigned Contracts"
-            value={stats.total_unsigned}
-            color="#ffc107"
-            icon="⏳"
-          />
-          <StatsCard
-            title="Total Revenue"
-            value={formatPrice(stats.total_revenue)}
-            color="#17a2b8"
-            icon="💰"
-          />
-        </div>
-      )}
-
-      {/* Filters */}
-      <div style={cardStyle}>
-        <form onSubmit={handleSearch}>
-          <div style={filtersSectionStyle}>
-            <input
-              type="text"
-              placeholder="Search by reference..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              style={inputStyle}
-            />
-
-            <select
-              value={filters.actif !== undefined ? (filters.actif ? 'true' : 'false') : 'all'}
-              onChange={(e) => {
-                if (e.target.value === 'all') {
-                  updateFilter('actif', undefined);
-                } else {
-                  updateFilter('actif', e.target.value === 'true');
-                }
-              }}
-              style={selectStyle}
-            >
-              <option value="all">All Status</option>
-              <option value="true">Active</option>
-              <option value="false">Inactive</option>
-            </select>
-
-            <select
-              value={filters.confirme !== undefined ? (filters.confirme ? 'true' : 'false') : 'all'}
-              onChange={(e) => {
-                if (e.target.value === 'all') {
-                  updateFilter('confirme', undefined);
-                } else {
-                  updateFilter('confirme', e.target.value === 'true');
-                }
-              }}
-              style={selectStyle}
-            >
-              <option value="all">All Confirmed</option>
-              <option value="true">Confirmed</option>
-              <option value="false">Not Confirmed</option>
-            </select>
-
-            <select
-              value={filters.sort_by || 'created_at'}
-              onChange={(e) => updateFilter('sort_by', e.target.value)}
-              style={selectStyle}
-            >
-              <option value="created_at">Created Date</option>
-              <option value="reference">Reference</option>
-              <option value="date_ouverture">Opened Date</option>
-              <option value="date_paiement">Payment Date</option>
-              <option value="montant_ttc">Price TTC</option>
-            </select>
-
-            <select
-              value={filters.sort_order || 'desc'}
-              onChange={(e) => updateFilter('sort_order', e.target.value as 'asc' | 'desc')}
-              style={selectStyle}
-            >
-              <option value="asc">Ascending</option>
-              <option value="desc">Descending</option>
-            </select>
-
-            <select
-              value={perPage}
-              onChange={(e) => setPerPage(Number(e.target.value))}
-              style={selectStyle}
-            >
-              <option value={10}>10 per page</option>
-              <option value={15}>15 per page</option>
-              <option value={25}>25 per page</option>
-              <option value={50}>50 per page</option>
-            </select>
-
-            <button type="submit" style={buttonStyle}>
-              Search
-            </button>
-
-            <button type="button" onClick={handleClearFilters} style={secondaryButtonStyle}>
-              Clear Filters
-            </button>
-          </div>
-        </form>
-      </div>
 
       {/* Results */}
       <div style={cardStyle}>
@@ -433,84 +353,379 @@ export default function ContractsList1() {
           </div>
         ) : (
           <>
-            <div style={{ overflowX: 'auto' }}>
+            {/* Filters Toggle Button */}
+            <button
+              type="button"
+              onClick={() => setFiltersOpen(!filtersOpen)}
+              style={filterToggleButtonStyle}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'linear-gradient(135deg, #667eea25 0%, #764ba225 100%)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'linear-gradient(135deg, #667eea15 0%, #764ba215 100%)';
+              }}
+            >
+              <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span>🔍</span>
+                <span>Filtres et options</span>
+              </span>
+              <span style={{
+                transition: 'transform 0.3s ease',
+                transform: filtersOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                display: 'inline-block'
+              }}>
+                ▼
+              </span>
+            </button>
+
+            {/* Filters - Collapsible */}
+            {filtersOpen && (
+              <form onSubmit={handleSearch}>
+                <div style={filtersSectionStyle}>
+                  <input
+                    type="text"
+                    placeholder="Search by reference..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    style={inputStyle}
+                  />
+
+                  <select
+                    value={filters.actif !== undefined ? (filters.actif ? 'true' : 'false') : 'all'}
+                    onChange={(e) => {
+                      if (e.target.value === 'all') {
+                        updateFilter('actif', undefined);
+                      } else {
+                        updateFilter('actif', e.target.value === 'true');
+                      }
+                    }}
+                    style={selectStyle}
+                  >
+                    <option value="all">All Status</option>
+                    <option value="true">Active</option>
+                    <option value="false">Inactive</option>
+                  </select>
+
+                  <select
+                    value={filters.confirme !== undefined ? (filters.confirme ? 'true' : 'false') : 'all'}
+                    onChange={(e) => {
+                      if (e.target.value === 'all') {
+                        updateFilter('confirme', undefined);
+                      } else {
+                        updateFilter('confirme', e.target.value === 'true');
+                      }
+                    }}
+                    style={selectStyle}
+                  >
+                    <option value="all">All Confirmed</option>
+                    <option value="true">Confirmed</option>
+                    <option value="false">Not Confirmed</option>
+                  </select>
+
+                  <select
+                    value={filters.sort_by || 'created_at'}
+                    onChange={(e) => updateFilter('sort_by', e.target.value)}
+                    style={selectStyle}
+                  >
+                    <option value="created_at">Created Date</option>
+                    <option value="reference">Reference</option>
+                    <option value="date_ouverture">Opened Date</option>
+                    <option value="date_paiement">Payment Date</option>
+                    <option value="montant_ttc">Price TTC</option>
+                  </select>
+
+                  <select
+                    value={filters.sort_order || 'desc'}
+                    onChange={(e) => updateFilter('sort_order', e.target.value as 'asc' | 'desc')}
+                    style={selectStyle}
+                  >
+                    <option value="asc">Ascending</option>
+                    <option value="desc">Descending</option>
+                  </select>
+
+                  <select
+                    value={perPage}
+                    onChange={(e) => setPerPage(Number(e.target.value))}
+                    style={selectStyle}
+                  >
+                    <option value={10}>10 per page</option>
+                    <option value={15}>15 per page</option>
+                    <option value={25}>25 per page</option>
+                    <option value={50}>50 per page</option>
+                  </select>
+
+                  <button type="submit" style={buttonStyle}>
+                    Search
+                  </button>
+
+                  <button type="button" onClick={handleClearFilters} style={secondaryButtonStyle}>
+                    Clear
+                  </button>
+                </div>
+              </form>
+            )}
+
+            <div style={tableContainerStyle} className="custom-scroll">
               <table style={tableStyle}>
                 <thead>
+                  {/* Group Headers Row */}
                   <tr>
-                    <th style={thStyle}>Ref</th>
-                    <th style={thStyle}>Customer</th>
-                    <th style={thStyle}>Address</th>
-                    <th style={thStyle}>Price TTC</th>
-                    <th style={thStyle}>Status</th>
-                    <th style={thStyle}>Confirmed</th>
-                    <th style={thStyle}>Date Ouverture</th>
-                    <th style={thStyle}>Date Paiement</th>
-                    <th style={thStyle}>Created</th>
-                    <th style={thStyle}>Actions</th>
+                    <th style={thStickyStyle} rowSpan={2}>ID</th>
+                    <th style={groupHeaderStyle} colSpan={4}>📋 INFORMATIONS CLIENT</th>
+                    <th style={groupHeaderStyle} colSpan={2}>💰 FINANCIER</th>
+                    <th style={groupHeaderStyle} colSpan={7}>🏢 PROJET</th>
+                    <th style={groupHeaderStyle} colSpan={5}>👥 ÉQUIPE</th>
+                    <th style={groupHeaderStyle} colSpan={3}>✅ STATUTS</th>
+                    <th style={groupHeaderStyle} colSpan={3}>📸 VALIDATIONS</th>
+                    <th style={groupHeaderStyle} colSpan={4}>📊 RAPPORTS</th>
+                    <th style={groupHeaderStyle} colSpan={3}>🔧 AUTRES</th>
+                    <th style={thStyle} rowSpan={2}>Actions</th>
+                  </tr>
+                  {/* Column Headers Row */}
+                  <tr>
+                    {/* Client Info */}
+                    <th style={thSecondRowStyle}>Nom Prénom</th>
+                    <th style={thSecondRowStyle}>Téléphone</th>
+                    <th style={thSecondRowStyle}>Ville</th>
+                    <th style={thSecondRowStyle}>Code Postal</th>
+                    {/* Financier */}
+                    <th style={thSecondRowStyle}>Date</th>
+                    <th style={thSecondRowStyle}>Montant</th>
+                    {/* Projet */}
+                    <th style={thSecondRowStyle}>Régie/callcenter</th>
+                    <th style={thSecondRowStyle}>Accès 1</th>
+                    <th style={thSecondRowStyle}>Accès 2</th>
+                    <th style={thSecondRowStyle}>Source</th>
+                    <th style={thSecondRowStyle}>Periode CEE</th>
+                    <th style={thSecondRowStyle}>Surface parcelle</th>
+                    <th style={thSecondRowStyle}>Société porteuse</th>
+                    {/* Équipe */}
+                    <th style={thSecondRowStyle}>Créateur</th>
+                    <th style={thSecondRowStyle}>Confirmateur</th>
+                    <th style={thSecondRowStyle}>Installateur</th>
+                    <th style={thSecondRowStyle}>Equipe d'installation</th>
+                    <th style={thSecondRowStyle}>Sous Traitant</th>
+                    {/* Statuts */}
+                    <th style={thSecondRowStyle}>Confirmé</th>
+                    <th style={thSecondRowStyle}>Facturable</th>
+                    <th style={thSecondRowStyle}>Bloqué</th>
+                    {/* Validations */}
+                    <th style={thSecondRowStyle}>V Photo</th>
+                    <th style={thSecondRowStyle}>V Document</th>
+                    <th style={thSecondRowStyle}>V Qualité</th>
+                    {/* Rapports */}
+                    <th style={thSecondRowStyle}>Temps</th>
+                    <th style={thSecondRowStyle}>Admin</th>
+                    <th style={thSecondRowStyle}>Attribution</th>
+                    <th style={thSecondRowStyle}>Installation</th>
+                    {/* Autres */}
+                    <th style={thSecondRowStyle}>Campaign</th>
+                    <th style={thSecondRowStyle}>Esclave</th>
+                    <th style={thSecondRowStyle}>Actif</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {Array.isArray(contracts) && contracts.map((contract) => (
+                  {Array.isArray(contracts) && contracts.map((contract, index) => {
+                    const rowBg = index % 2 === 0 ? 'white' : '#fafafa';
+                    return (
                     <tr key={contract.id}>
-                      <td style={tdStyle}>
-                        <strong>{contract.reference || `#${contract.id}`}</strong>
+                      {/* ID - Sticky */}
+                      <td style={{
+                        ...tdStickyStyle,
+                        backgroundColor: rowBg,
+                      }}>
+                        <strong style={{ color: '#667eea' }}>{contract.id}</strong>
                       </td>
+
+                      {/* Nom Prénom */}
                       <td style={tdStyle}>
                         {contract.customer ? (
-                          <>
-                            <div style={{ fontWeight: '500' }}>
-                              {contract.customer.company || contract.customer.nom_prenom}
-                            </div>
-                            <div style={{ fontSize: '12px', color: '#666' }}>
-                              📧 {contract.customer.email}
-                            </div>
-                            <div style={{ fontSize: '12px', color: '#666' }}>
-                              📞 {contract.customer.telephone || contract.customer.phone}
-                            </div>
-                          </>
+                          <div style={{ fontWeight: '500' }}>
+                            {contract.customer.company || contract.customer.nom_prenom}
+                          </div>
                         ) : (
                           <span style={{ color: '#999' }}>-</span>
                         )}
                       </td>
+
+                      {/* Téléphone */}
                       <td style={tdStyle}>
-                        {contract.customer?.address ? (
-                          <>
-                            <div style={{ fontSize: '13px' }}>
-                              {contract.customer.address.address1}
-                            </div>
-                            <div style={{ fontSize: '12px', color: '#666' }}>
-                              {contract.customer.address.postcode} {contract.customer.address.city}
-                            </div>
-                          </>
-                        ) : (
-                          <span style={{ color: '#999' }}>-</span>
-                        )}
+                        {contract.customer?.telephone || contract.customer?.phone || '-'}
                       </td>
+
+                      {/* Ville */}
+                      <td style={tdStyle}>
+                        {contract.customer?.address?.city || '-'}
+                      </td>
+
+                      {/* Code Postal */}
+                      <td style={tdStyle}>
+                        {contract.customer?.address?.postcode || '-'}
+                      </td>
+
+                      {/* Date */}
+                      <td style={tdStyle}>{formatDate(contract.date_ouverture)}</td>
+
+                      {/* Montant */}
                       <td style={tdStyle}>
                         <strong>{formatPrice(contract.montant_ttc)}</strong>
-                        <div style={{ fontSize: '12px', color: '#666' }}>
-                          HT: {formatPrice(contract.montant_ht)}
-                        </div>
                       </td>
-                      <td style={tdStyle}>
-                        {contract.status_contrat && (
-                          <StatusBadge
-                            name={contract.status_contrat.name}
-                            color={contract.status_contrat.color || '#667eea'}
-                            icon={contract.status_contrat.icon}
-                          />
-                        )}
-                      </td>
+
+                      {/* Régie/callcenter */}
+                      <td style={tdStyle}>{contract.regie_callcenter || '-'}</td>
+
+                      {/* Accès 1 */}
+                      <td style={tdStyle}>{contract.acces_1 || '-'}</td>
+
+                      {/* Accès 2 */}
+                      <td style={tdStyle}>{contract.acces_2 || '-'}</td>
+
+                      {/* Source */}
+                      <td style={tdStyle}>{contract.source || '-'}</td>
+
+                      {/* Periode CEE */}
+                      <td style={tdStyle}>{contract.periode_cee || '-'}</td>
+
+                      {/* Surface parcelle */}
+                      <td style={tdStyle}>{contract.surface_parcelle || '-'}</td>
+
+                      {/* Société porteuse */}
+                      <td style={tdStyle}>{contract.societe_porteuse || '-'}</td>
+
+                      {/* Créateur */}
+                      <td style={tdStyle}>{contract.createur_id || '-'}</td>
+
+                      {/* Confirmateur */}
+                      <td style={tdStyle}>{contract.confirmateur_id || '-'}</td>
+
+                      {/* Installateur */}
+                      <td style={tdStyle}>{contract.installateur_id || '-'}</td>
+
+                      {/* Equipe d'installation */}
+                      <td style={tdStyle}>{contract.equipe_installation || '-'}</td>
+
+                      {/* Sous Traitant */}
+                      <td style={tdStyle}>{contract.sous_traitant_id || '-'}</td>
+
+                      {/* Confirmé */}
                       <td style={tdStyle}>
                         {contract.confirme ? (
-                          <span style={{ color: '#28a745' }}>✅ Yes</span>
+                          <span style={{ color: '#28a745' }}>✅</span>
                         ) : (
-                          <span style={{ color: '#ffc107' }}>⏳ No</span>
+                          <span style={{ color: '#ffc107' }}>⏳</span>
                         )}
                       </td>
-                      <td style={tdStyle}>{formatDate(contract.date_ouverture)}</td>
-                      <td style={tdStyle}>{formatDate(contract.date_paiement)}</td>
-                      <td style={tdStyle}>{formatDate(contract.created_at)}</td>
+
+                      {/* Facturable */}
+                      <td style={tdStyle}>
+                        {contract.facturable ? (
+                          <span style={{ color: '#28a745' }}>✅</span>
+                        ) : (
+                          <span style={{ color: '#dc3545' }}>❌</span>
+                        )}
+                      </td>
+
+                      {/* Bloqué */}
+                      <td style={tdStyle}>
+                        {contract.bloque ? (
+                          <span style={{ color: '#dc3545' }}>🔒</span>
+                        ) : (
+                          <span style={{ color: '#28a745' }}>🔓</span>
+                        )}
+                      </td>
+
+                      {/* Devis bloq */}
+                      <td style={tdStyle}>
+                        {contract.devis_bloque ? (
+                          <span style={{ color: '#dc3545' }}>🔒</span>
+                        ) : (
+                          <span style={{ color: '#28a745' }}>🔓</span>
+                        )}
+                      </td>
+
+                      {/* V Photo */}
+                      <td style={tdStyle}>
+                        {contract.has_photos ? (
+                          <span style={{ color: '#28a745' }}>📷</span>
+                        ) : (
+                          <span style={{ color: '#999' }}>-</span>
+                        )}
+                      </td>
+
+                      {/* V Document */}
+                      <td style={tdStyle}>
+                        {contract.has_documents ? (
+                          <span style={{ color: '#28a745' }}>📄</span>
+                        ) : (
+                          <span style={{ color: '#999' }}>-</span>
+                        )}
+                      </td>
+
+                      {/* V controle qualité */}
+                      <td style={tdStyle}>
+                        {contract.controle_qualite_valide ? (
+                          <span style={{ color: '#28a745' }}>✅</span>
+                        ) : (
+                          <span style={{ color: '#999' }}>-</span>
+                        )}
+                      </td>
+
+                      {/* Rapport temps */}
+                      <td style={tdStyle}>
+                        {contract.rapport_temps ? (
+                          <span title={contract.rapport_temps}>📊</span>
+                        ) : (
+                          '-'
+                        )}
+                      </td>
+
+                      {/* Rapport Admin. */}
+                      <td style={tdStyle}>
+                        {contract.rapport_admin ? (
+                          <span title={contract.rapport_admin}>📊</span>
+                        ) : (
+                          '-'
+                        )}
+                      </td>
+
+                      {/* Rapport Attribution */}
+                      <td style={tdStyle}>
+                        {contract.rapport_attribution ? (
+                          <span title={contract.rapport_attribution}>📊</span>
+                        ) : (
+                          '-'
+                        )}
+                      </td>
+
+                      {/* Rapport d'installation */}
+                      <td style={tdStyle}>
+                        {contract.rapport_installation ? (
+                          <span title={contract.rapport_installation}>📊</span>
+                        ) : (
+                          '-'
+                        )}
+                      </td>
+
+                      {/* Campaign ID */}
+                      <td style={tdStyle}>{contract.campaign_id || '-'}</td>
+
+                      {/* Esclave */}
+                      <td style={tdStyle}>{contract.esclave || '-'}</td>
+
+                      {/* Actif/Supprimé */}
+                      <td style={tdStyle}>
+                        <span
+                          style={{
+                            ...badgeStyle,
+                            backgroundColor: contract.actif ? '#28a74520' : '#dc354520',
+                            color: contract.actif ? '#28a745' : '#dc3545',
+                          }}
+                        >
+                          {contract.actif ? 'Actif' : 'Supprimé'}
+                        </span>
+                      </td>
+
+                      {/* Actions */}
                       <td style={tdStyle}>
                         <button
                           onClick={() => handleDelete(contract.id)}
@@ -526,7 +741,8 @@ export default function ContractsList1() {
                         </button>
                       </td>
                     </tr>
-                  ))}
+                  );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -572,7 +788,7 @@ export default function ContractsList1() {
         )}
       </div>
 
-      {/* CSS Animation */}
+      {/* CSS Styles */}
       <style jsx>{`
         @keyframes spin {
           0% {
@@ -581,6 +797,38 @@ export default function ContractsList1() {
           100% {
             transform: rotate(360deg);
           }
+        }
+
+        /* Custom Scrollbar */
+        :global(.custom-scroll) {
+          scrollbar-width: thin;
+          scrollbar-color: #667eea #f0f0f0;
+        }
+
+        :global(.custom-scroll::-webkit-scrollbar) {
+          height: 12px;
+          width: 12px;
+        }
+
+        :global(.custom-scroll::-webkit-scrollbar-track) {
+          background: #f0f0f0;
+          border-radius: 10px;
+        }
+
+        :global(.custom-scroll::-webkit-scrollbar-thumb) {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          border-radius: 10px;
+          border: 2px solid #f0f0f0;
+        }
+
+        :global(.custom-scroll::-webkit-scrollbar-thumb:hover) {
+          background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+        }
+
+        /* Hover effect on table rows */
+        :global(tbody tr:hover) {
+          background-color: #f5f5ff !important;
+          transition: background-color 0.2s ease;
         }
       `}</style>
     </div>
