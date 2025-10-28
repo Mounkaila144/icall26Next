@@ -40,34 +40,39 @@ export const customersService = {
    * Get customer by ID
    */
   async getCustomer(id: number): Promise<CustomerDetailResponse> {
-    return apiClient.get<CustomerDetailResponse>(`${CUSTOMERS_BASE_URL}/${id}`);
+    const response = await apiClient.get<CustomerDetailResponse>(`${CUSTOMERS_BASE_URL}/${id}`);
+    return response.data;
   },
 
   /**
    * Get customer statistics
    */
   async getStats(): Promise<CustomerStatsResponse> {
-    return apiClient.get<CustomerStatsResponse>(`${CUSTOMERS_BASE_URL}/stats`);
+    const response = await apiClient.get<CustomerStatsResponse>(`${CUSTOMERS_BASE_URL}/stats`);
+    return response.data;
   },
 
   /**
    * Create a new customer
    */
   async createCustomer(data: any): Promise<CustomerDetailResponse> {
-    return apiClient.post<CustomerDetailResponse>(CUSTOMERS_BASE_URL, data);
+    const response = await apiClient.post<CustomerDetailResponse>(CUSTOMERS_BASE_URL, data);
+    return response.data;
   },
 
   /**
    * Update a customer
    */
   async updateCustomer(id: number, data: any): Promise<CustomerDetailResponse> {
-    return apiClient.put<CustomerDetailResponse>(`${CUSTOMERS_BASE_URL}/${id}`, data);
+    const response = await apiClient.put<CustomerDetailResponse>(`${CUSTOMERS_BASE_URL}/${id}`, data);
+    return response.data;
   },
 
   /**
    * Delete a customer (soft delete)
    */
   async deleteCustomer(id: number): Promise<{ success: boolean; message: string }> {
-    return apiClient.delete(`${CUSTOMERS_BASE_URL}/${id}`);
+    const response = await apiClient.delete(`${CUSTOMERS_BASE_URL}/${id}`);
+    return response.data;
   },
 };

@@ -13,6 +13,7 @@ export { initUsersGuardModule } from './admin/init';
 export type {
   User,
   Group,
+  Permission,
   LoginCredentials,
   LoginResponse,
   AuthState,

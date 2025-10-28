@@ -27,19 +27,23 @@ export default function ContractForm({ contract, onSuccess, onCancel }: Contract
   // Form state
   const [formData, setFormData] = useState<Partial<CreateContractData>>({
     reference: contract?.reference || '',
-    customer_id: contract?.customer_id || 0,
-    financial_partner_id: contract?.financial_partner_id || 0,
-    tax_id: contract?.tax_id || 0,
-    team_id: contract?.team_id || 0,
+    customer_id: contract?.customer?.id || 0,
+    regie_callcenter: contract?.regie_callcenter || 0,
     telepro_id: contract?.telepro_id || 0,
-    sale_1_id: contract?.sale_1_id || 0,
+    commercial_1_id: contract?.commercial_1_id || 0,
+    commercial_2_id: contract?.commercial_2_id || 0,
     manager_id: contract?.manager_id || 0,
-    state_id: contract?.state_id || 0,
-    total_price_with_taxe: contract?.total_price_with_taxe || 0,
-    total_price_without_taxe: contract?.total_price_without_taxe || 0,
-    is_signed: contract?.is_signed || 'NO',
-    status: contract?.status_flag || 'ACTIVE',
-    remarks: contract?.remarks || '',
+    assistant_id: contract?.assistant_id || 0,
+    installateur_id: contract?.installateur_id || 0,
+    status_contrat_id: contract?.status_contrat_id || 0,
+    status_installation_id: contract?.status_installation_id || 0,
+    status_admin_id: contract?.status_admin_id || 0,
+    montant_ttc: contract?.montant_ttc || 0,
+    montant_ht: contract?.montant_ht || 0,
+    confirme: contract?.confirme || false,
+    actif: contract?.actif ?? true,
+    status_flag: contract?.status_flag || 'ACTIVE',
+    remarques: contract?.remarques || '',
   });
 
   const isEditMode = !!contract;
@@ -260,46 +264,44 @@ export default function ContractForm({ contract, onSuccess, onCancel }: Contract
 
           <div style={formGroupStyle}>
             <label style={labelStyle}>
-              Financial Partner ID <span style={requiredStyle}>*</span>
+              Status Contrat ID <span style={requiredStyle}>*</span>
             </label>
             <input
               type="number"
-              name="financial_partner_id"
-              value={formData.financial_partner_id}
-              onChange={handleChange}
-              required
-              style={inputStyle}
-              placeholder="Financial Partner ID"
-            />
-          </div>
-
-          <div style={formGroupStyle}>
-            <label style={labelStyle}>
-              Tax ID <span style={requiredStyle}>*</span>
-            </label>
-            <input
-              type="number"
-              name="tax_id"
-              value={formData.tax_id}
-              onChange={handleChange}
-              required
-              style={inputStyle}
-              placeholder="Tax ID"
-            />
-          </div>
-
-          <div style={formGroupStyle}>
-            <label style={labelStyle}>
-              State ID <span style={requiredStyle}>*</span>
-            </label>
-            <input
-              type="number"
-              name="state_id"
-              value={formData.state_id}
+              name="status_contrat_id"
+              value={formData.status_contrat_id}
               onChange={handleChange}
               required
               style={inputStyle}
               placeholder="Contract Status ID"
+            />
+          </div>
+
+          <div style={formGroupStyle}>
+            <label style={labelStyle}>
+              Status Installation ID
+            </label>
+            <input
+              type="number"
+              name="status_installation_id"
+              value={formData.status_installation_id || ''}
+              onChange={handleChange}
+              style={inputStyle}
+              placeholder="Installation Status ID (optional)"
+            />
+          </div>
+
+          <div style={formGroupStyle}>
+            <label style={labelStyle}>
+              Status Admin ID
+            </label>
+            <input
+              type="number"
+              name="status_admin_id"
+              value={formData.status_admin_id || ''}
+              onChange={handleChange}
+              style={inputStyle}
+              placeholder="Admin Status ID (optional)"
             />
           </div>
         </div>
@@ -308,29 +310,27 @@ export default function ContractForm({ contract, onSuccess, onCancel }: Contract
         <div style={gridStyle}>
           <div style={formGroupStyle}>
             <label style={labelStyle}>
-              Team ID <span style={requiredStyle}>*</span>
+              Regie Callcenter
             </label>
             <input
               type="number"
-              name="team_id"
-              value={formData.team_id}
+              name="regie_callcenter"
+              value={formData.regie_callcenter || ''}
               onChange={handleChange}
-              required
               style={inputStyle}
-              placeholder="Team ID"
+              placeholder="Regie Callcenter ID"
             />
           </div>
 
           <div style={formGroupStyle}>
             <label style={labelStyle}>
-              Telepro ID <span style={requiredStyle}>*</span>
+              Telepro ID
             </label>
             <input
               type="number"
               name="telepro_id"
-              value={formData.telepro_id}
+              value={formData.telepro_id || ''}
               onChange={handleChange}
-              required
               style={inputStyle}
               placeholder="Telepro ID"
             />
@@ -338,31 +338,57 @@ export default function ContractForm({ contract, onSuccess, onCancel }: Contract
 
           <div style={formGroupStyle}>
             <label style={labelStyle}>
-              Sale 1 ID <span style={requiredStyle}>*</span>
+              Commercial 1 ID
             </label>
             <input
               type="number"
-              name="sale_1_id"
-              value={formData.sale_1_id}
+              name="commercial_1_id"
+              value={formData.commercial_1_id || ''}
               onChange={handleChange}
-              required
               style={inputStyle}
-              placeholder="Primary Salesperson ID"
+              placeholder="Primary Commercial ID"
             />
           </div>
 
           <div style={formGroupStyle}>
             <label style={labelStyle}>
-              Manager ID <span style={requiredStyle}>*</span>
+              Commercial 2 ID
+            </label>
+            <input
+              type="number"
+              name="commercial_2_id"
+              value={formData.commercial_2_id || ''}
+              onChange={handleChange}
+              style={inputStyle}
+              placeholder="Secondary Commercial ID"
+            />
+          </div>
+
+          <div style={formGroupStyle}>
+            <label style={labelStyle}>
+              Manager ID
             </label>
             <input
               type="number"
               name="manager_id"
-              value={formData.manager_id}
+              value={formData.manager_id || ''}
               onChange={handleChange}
-              required
               style={inputStyle}
               placeholder="Manager ID"
+            />
+          </div>
+
+          <div style={formGroupStyle}>
+            <label style={labelStyle}>
+              Assistant ID
+            </label>
+            <input
+              type="number"
+              name="assistant_id"
+              value={formData.assistant_id || ''}
+              onChange={handleChange}
+              style={inputStyle}
+              placeholder="Assistant ID"
             />
           </div>
         </div>
@@ -371,14 +397,13 @@ export default function ContractForm({ contract, onSuccess, onCancel }: Contract
         <div style={gridStyle}>
           <div style={formGroupStyle}>
             <label style={labelStyle}>
-              Price (Tax Included) <span style={requiredStyle}>*</span>
+              Montant TTC (Tax Included)
             </label>
             <input
               type="number"
-              name="total_price_with_taxe"
-              value={formData.total_price_with_taxe}
+              name="montant_ttc"
+              value={formData.montant_ttc || ''}
               onChange={handleChange}
-              required
               step="0.01"
               min="0"
               style={inputStyle}
@@ -388,14 +413,13 @@ export default function ContractForm({ contract, onSuccess, onCancel }: Contract
 
           <div style={formGroupStyle}>
             <label style={labelStyle}>
-              Price (Tax Excluded) <span style={requiredStyle}>*</span>
+              Montant HT (Tax Excluded)
             </label>
             <input
               type="number"
-              name="total_price_without_taxe"
-              value={formData.total_price_without_taxe}
+              name="montant_ht"
+              value={formData.montant_ht || ''}
               onChange={handleChange}
-              required
               step="0.01"
               min="0"
               style={inputStyle}
@@ -404,23 +428,23 @@ export default function ContractForm({ contract, onSuccess, onCancel }: Contract
           </div>
 
           <div style={formGroupStyle}>
-            <label style={labelStyle}>Signed Status</label>
+            <label style={labelStyle}>Confirme</label>
             <select
-              name="is_signed"
-              value={formData.is_signed}
-              onChange={handleChange}
+              name="confirme"
+              value={formData.confirme ? 'true' : 'false'}
+              onChange={(e) => setFormData({ ...formData, confirme: e.target.value === 'true' })}
               style={inputStyle}
             >
-              <option value="NO">Not Signed</option>
-              <option value="YES">Signed</option>
+              <option value="false">No</option>
+              <option value="true">Yes</option>
             </select>
           </div>
 
           <div style={formGroupStyle}>
             <label style={labelStyle}>Contract Status</label>
             <select
-              name="status"
-              value={formData.status}
+              name="status_flag"
+              value={formData.status_flag}
               onChange={handleChange}
               style={inputStyle}
             >
@@ -432,10 +456,10 @@ export default function ContractForm({ contract, onSuccess, onCancel }: Contract
 
         {/* Remarks */}
         <div style={formGroupStyle}>
-          <label style={labelStyle}>Remarks</label>
+          <label style={labelStyle}>Remarques</label>
           <textarea
-            name="remarks"
-            value={formData.remarks}
+            name="remarques"
+            value={formData.remarques}
             onChange={handleChange}
             style={textareaStyle}
             placeholder="Additional notes or remarks..."

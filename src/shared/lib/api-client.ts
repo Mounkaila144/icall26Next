@@ -5,8 +5,9 @@ import { ApiError } from '../types/api.types';
  * Create an API client instance
  * L'API est sur le même domaine, pas besoin de X-Tenant-ID !
  * Le domaine est automatiquement détecté par Laravel
+ * @param tenantId - Optional tenant ID (kept for compatibility, not used)
  */
-export const createApiClient = (): AxiosInstance => {
+export const createApiClient = (tenantId?: string): AxiosInstance => {
     const client = axios.create({
         baseURL: process.env.NEXT_PUBLIC_API_URL || '/api',
         headers: {

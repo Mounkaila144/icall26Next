@@ -204,11 +204,11 @@ export const Navbar: React.FC = () => {
                 fontWeight: '600',
               }}
             >
-              {user?.name?.charAt(0).toUpperCase() || 'U'}
+              {user?.firstname?.charAt(0).toUpperCase() || user?.username?.charAt(0).toUpperCase() || 'U'}
             </div>
             <div style={{ textAlign: 'left', display: 'flex', flexDirection: 'column' }}>
               <span style={{ fontSize: '14px', fontWeight: '600', color: '#1e293b' }}>
-                {user?.name || 'User'}
+                {user?.firstname && user?.lastname ? `${user.firstname} ${user.lastname}` : user?.username || 'User'}
               </span>
               <span style={{ fontSize: '12px', color: '#64748b' }}>
                 {user?.email || 'user@example.com'}
@@ -252,7 +252,7 @@ export const Navbar: React.FC = () => {
             >
               <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(226, 232, 240, 0.6)' }}>
                 <div style={{ fontSize: '14px', fontWeight: '600', color: '#1e293b' }}>
-                  {user?.name}
+                  {user?.firstname && user?.lastname ? `${user.firstname} ${user.lastname}` : user?.username}
                 </div>
                 <div style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>
                   {user?.email}

@@ -3,7 +3,8 @@
     "allow": [
       "Bash(mkdir:*)",
       "Read(//c/laragon/www/backend-api/Modules/**)",
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "Bash(npm run build:*)"
     ],
     "deny": [],
     "ask": []

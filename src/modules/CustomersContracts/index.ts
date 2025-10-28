@@ -43,6 +43,5 @@ export type {
   // Utility Types
   ContractSortField,
   ContractStatusType,
-  ContractSignedType,
   ContractUserApplication,
 } from './types';

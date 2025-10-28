@@ -36,36 +36,42 @@ export const contractsService = {
       // Search & Basic Filters
       if (filters?.reference) params.append('reference', filters.reference);
       if (filters?.customer_id) params.append('customer_id', filters.customer_id.toString());
-      if (filters?.remarks) params.append('remarks', filters.remarks);
+      if (filters?.remarques) params.append('remarques', filters.remarques);
 
       // Status Filters
-      if (filters?.state_id) params.append('state_id', filters.state_id.toString());
-      if (filters?.install_state_id) params.append('install_state_id', filters.install_state_id.toString());
-      if (filters?.admin_status_id) params.append('admin_status_id', filters.admin_status_id.toString());
-      if (filters?.is_signed) params.append('is_signed', filters.is_signed);
+      if (filters?.status_contrat_id) params.append('status_contrat_id', filters.status_contrat_id.toString());
+      if (filters?.status_installation_id) params.append('status_installation_id', filters.status_installation_id.toString());
+      if (filters?.status_admin_id) params.append('status_admin_id', filters.status_admin_id.toString());
+      if (filters?.confirme !== undefined) params.append('confirme', filters.confirme ? '1' : '0');
+      if (filters?.actif !== undefined) params.append('actif', filters.actif ? '1' : '0');
       if (filters?.status) params.append('status', filters.status);
 
       // Date Range Filters
-      if (filters?.opened_at_from) params.append('opened_at_from', filters.opened_at_from);
-      if (filters?.opened_at_to) params.append('opened_at_to', filters.opened_at_to);
-      if (filters?.payment_at_from) params.append('payment_at_from', filters.payment_at_from);
-      if (filters?.payment_at_to) params.append('payment_at_to', filters.payment_at_to);
-      if (filters?.opc_at_from) params.append('opc_at_from', filters.opc_at_from);
-      if (filters?.opc_at_to) params.append('opc_at_to', filters.opc_at_to);
+      if (filters?.date_ouverture_from) params.append('date_ouverture_from', filters.date_ouverture_from);
+      if (filters?.date_ouverture_to) params.append('date_ouverture_to', filters.date_ouverture_to);
+      if (filters?.date_paiement_from) params.append('date_paiement_from', filters.date_paiement_from);
+      if (filters?.date_paiement_to) params.append('date_paiement_to', filters.date_paiement_to);
+      if (filters?.date_opc_from) params.append('date_opc_from', filters.date_opc_from);
+      if (filters?.date_opc_to) params.append('date_opc_to', filters.date_opc_to);
 
       // Team & Staff Filters
-      if (filters?.team_id) params.append('team_id', filters.team_id.toString());
+      if (filters?.regie_callcenter) params.append('regie_callcenter', filters.regie_callcenter.toString());
       if (filters?.telepro_id) params.append('telepro_id', filters.telepro_id.toString());
-      if (filters?.sale_1_id) params.append('sale_1_id', filters.sale_1_id.toString());
-      if (filters?.sale_2_id) params.append('sale_2_id', filters.sale_2_id.toString());
+      if (filters?.commercial_1_id) params.append('commercial_1_id', filters.commercial_1_id.toString());
+      if (filters?.commercial_2_id) params.append('commercial_2_id', filters.commercial_2_id.toString());
       if (filters?.manager_id) params.append('manager_id', filters.manager_id.toString());
       if (filters?.assistant_id) params.append('assistant_id', filters.assistant_id.toString());
-      if (filters?.installer_user_id) params.append('installer_user_id', filters.installer_user_id.toString());
+      if (filters?.installateur_id) params.append('installateur_id', filters.installateur_id.toString());
 
       // Financial Filters
-      if (filters?.financial_partner_id) params.append('financial_partner_id', filters.financial_partner_id.toString());
-      if (filters?.price_min) params.append('price_min', filters.price_min.toString());
-      if (filters?.price_max) params.append('price_max', filters.price_max.toString());
+      if (filters?.montant_min) params.append('montant_min', filters.montant_min.toString());
+      if (filters?.montant_max) params.append('montant_max', filters.montant_max.toString());
+
+      // Boolean Filters
+      if (filters?.facturable !== undefined) params.append('facturable', filters.facturable ? '1' : '0');
+      if (filters?.bloque !== undefined) params.append('bloque', filters.bloque ? '1' : '0');
+      if (filters?.has_photos !== undefined) params.append('has_photos', filters.has_photos ? '1' : '0');
+      if (filters?.has_documents !== undefined) params.append('has_documents', filters.has_documents ? '1' : '0');
 
       // Pagination & Sorting
       if (filters?.sort_by) params.append('sort_by', filters.sort_by);

@@ -22,7 +22,7 @@ export const useMenus = () => {
     try {
       setIsLoading(true);
       setError(null);
-      const data = await menuService.getMenuTree(tenantId);
+      const data = await menuService.getMenuTree(tenantId || undefined);
       setMenus(data);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch menus';
@@ -39,7 +39,7 @@ export const useMenus = () => {
   const fetchFlatMenus = useCallback(async () => {
     try {
       setError(null);
-      const data = await menuService.getMenusFlat(tenantId);
+      const data = await menuService.getMenusFlat(tenantId || undefined);
       setFlatMenus(data);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch flat menus';
@@ -55,7 +55,7 @@ export const useMenus = () => {
     async (data: MenuFormData): Promise<MenuItem | null> => {
       try {
         setError(null);
-        const newMenu = await menuService.createMenu(data, tenantId);
+        const newMenu = await menuService.createMenu(data, tenantId || undefined);
         await fetchMenus(); // Refresh list
         return newMenu;
       } catch (err) {
@@ -75,7 +75,7 @@ export const useMenus = () => {
     async (id: string, data: Partial<MenuFormData>): Promise<MenuItem | null> => {
       try {
         setError(null);
-        const updatedMenu = await menuService.updateMenu(id, data, tenantId);
+        const updatedMenu = await menuService.updateMenu(id, data, tenantId || undefined);
         await fetchMenus(); // Refresh list
         return updatedMenu;
       } catch (err) {
@@ -95,7 +95,7 @@ export const useMenus = () => {
     async (id: string): Promise<boolean> => {
       try {
         setError(null);
-        await menuService.deleteMenu(id, tenantId);
+        await menuService.deleteMenu(id, tenantId || undefined);
         await fetchMenus(); // Refresh list
         return true;
       } catch (err) {
@@ -116,7 +116,7 @@ export const useMenus = () => {
     async (id: string, currentVisibility: boolean): Promise<boolean> => {
       try {
         setError(null);
-        await menuService.toggleVisibility(id, currentVisibility, tenantId);
+        await menuService.toggleVisibility(id, currentVisibility, tenantId || undefined);
         await fetchMenus(); // Refresh list
         return true;
       } catch (err) {
@@ -136,7 +136,7 @@ export const useMenus = () => {
     async (id: string, currentActive: boolean): Promise<boolean> => {
       try {
         setError(null);
-        await menuService.toggleActive(id, currentActive, tenantId);
+        await menuService.toggleActive(id, currentActive, tenantId || undefined);
         await fetchMenus(); // Refresh list
         return true;
       } catch (err) {
@@ -156,7 +156,7 @@ export const useMenus = () => {
     async (id: string, parentId: string | null): Promise<boolean> => {
       try {
         setError(null);
-        await menuService.moveMenu(id, parentId, tenantId);
+        await menuService.moveMenu(id, parentId, tenantId || undefined);
         await fetchMenus(); // Refresh list
         return true;
       } catch (err) {
@@ -212,7 +212,7 @@ export const useMenu = (id: string) => {
       try {
         setIsLoading(true);
         setError(null);
-        const data = await menuService.getMenuById(id, tenantId);
+        const data = await menuService.getMenuById(id, tenantId || undefined);
         setMenu(data);
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Failed to fetch menu';
