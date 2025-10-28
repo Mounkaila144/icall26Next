@@ -545,16 +545,36 @@ export const Sidebar: React.FC = () => {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '20px' }}>
           {(() => {
-            const menusToRender = isCollapsed
-              ? // En mode réduit, afficher tous les menus et leurs enfants à plat
-                menus.slice(1).flatMap((menu) => {
-                  if (menu.children && menu.children.length > 0) {
-                    return [menu, ...menu.children.filter(child => child.is_visible && child.is_active)];
-                  }
-                  return [menu];
-                })
-              : // En mode étendu, afficher normalement
-                menus.slice(1);
+            console.log('🔍 [Sidebar] All menus:', menus.map(m => ({ label: m.label, children: m.children?.length || 0 })));
+            console.log('🔍 [Sidebar] First menu (index 0):', menus[0]);
+            console.log('🔍 [Sidebar] Menus after slice(1):', menus.slice(1).map(m => m.label));
+
+            // Si le premier menu est un conteneur avec des enfants, afficher ses enfants directement
+            // Sinon, afficher tous les menus sauf le premier
+            let menusToRender;
+
+            if (menus.length === 1 && menus[0].children && menus[0].children.length > 0) {
+              // Un seul menu racine avec enfants : afficher les enfants
+              console.log('🔍 [Sidebar] Single root menu with children detected, rendering children');
+              menusToRender = isCollapsed
+                ? menus[0].children.flatMap((menu) => {
+                    if (menu.children && menu.children.length > 0) {
+                      return [menu, ...menu.children.filter(child => child.is_visible && child.is_active)];
+                    }
+                    return [menu];
+                  })
+                : menus[0].children;
+            } else {
+              // Comportement normal : skip le premier menu
+              menusToRender = isCollapsed
+                ? menus.slice(1).flatMap((menu) => {
+                    if (menu.children && menu.children.length > 0) {
+                      return [menu, ...menu.children.filter(child => child.is_visible && child.is_active)];
+                    }
+                    return [menu];
+                  })
+                : menus.slice(1);
+            }
 
             console.log('✅ [Sidebar] Rendering', menusToRender.length, 'menus');
 
