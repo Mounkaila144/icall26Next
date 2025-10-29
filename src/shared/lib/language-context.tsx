@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo, useCallback } from 'react';
 
 interface LanguageContextType {
   language: string;
@@ -23,13 +23,22 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const setLanguage = (lang: string) => {
+  const setLanguage = useCallback((lang: string) => {
+    console.log('🌍 [LanguageProvider] setLanguage called:', lang);
     setLanguageState(lang);
     localStorage.setItem('app_language', lang);
-  };
+  }, []);
+
+  // Memoize the context value to prevent unnecessary re-renders
+  const value = useMemo(() => ({
+    language,
+    setLanguage
+  }), [language, setLanguage]);
+
+  console.log('🔁 [LanguageProvider] Rendering with language:', language);
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage }}>
+    <LanguageContext.Provider value={value}>
       {children}
     </LanguageContext.Provider>
   );

@@ -12,6 +12,7 @@ import type {
   CustomerContract,
   ContractFilters,
   ContractStatsResponse,
+  CreateContractData,
 } from '../../types';
 
 interface UseContractsReturn {
@@ -40,6 +41,7 @@ interface UseContractsReturn {
   clearFilters: () => void;
   refreshContracts: () => Promise<void>;
   deleteContract: (id: number) => Promise<boolean>;
+  createContract: (data: CreateContractData) => Promise<void>;
 }
 
 const defaultFilters: ContractFilters = {
@@ -195,6 +197,28 @@ export const useContracts = (initialFilters?: Partial<ContractFilters>): UseCont
   );
 
   /**
+   * Create a new contract
+   */
+  const createContract = useCallback(
+    async (data: CreateContractData): Promise<void> => {
+      try {
+        const response = await contractsService.createContract(data);
+
+        if (response.success) {
+          // Reload contracts after creation
+          await loadContracts();
+        } else {
+          throw new Error('Failed to create contract');
+        }
+      } catch (err) {
+        console.error('Error creating contract:', err);
+        throw err;
+      }
+    },
+    [loadContracts]
+  );
+
+  /**
    * Update perPage and reset to first page
    */
   const handleSetPerPage = useCallback((newPerPage: number) => {
@@ -238,5 +262,6 @@ export const useContracts = (initialFilters?: Partial<ContractFilters>): UseCont
     clearFilters,
     refreshContracts,
     deleteContract,
+    createContract,
   };
 };

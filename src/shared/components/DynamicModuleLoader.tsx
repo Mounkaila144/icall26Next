@@ -38,13 +38,6 @@ export function DynamicModuleLoader({ slug }: DynamicModuleLoaderProps) {
         // Convert slug to module and component names
         const { moduleName, componentName, importPath } = transformSlugToModule(slug);
 
-        console.log('🔍 Dynamic Module Loading:', {
-          slug,
-          moduleName,
-          componentName,
-          importPath,
-        });
-
         // Dynamically import the component
         const module = await import(
           `@/src/modules/${moduleName}/admin/components/${componentName}.tsx`
@@ -61,7 +54,6 @@ export function DynamicModuleLoader({ slug }: DynamicModuleLoaderProps) {
 
         setComponent(() => LoadedComponent);
       } catch (err: any) {
-        console.error('❌ Failed to load dynamic component:', err);
         setError(err.message || 'Failed to load module');
       } finally {
         setIsLoading(false);
@@ -69,7 +61,8 @@ export function DynamicModuleLoader({ slug }: DynamicModuleLoaderProps) {
     }
 
     loadComponent();
-  }, [slug]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [slug.join('/')]);
 
   if (isLoading) {
     return <LoadingState />;

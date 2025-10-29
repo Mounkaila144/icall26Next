@@ -8,6 +8,4 @@
 export const initUsersGuardModule = () => {
   // Add initialization logic here if needed
   // e.g., register event listeners, validators, etc.
-
-  console.log('UsersGuard module initialized');
 };

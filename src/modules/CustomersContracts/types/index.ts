@@ -320,12 +320,50 @@ export interface CreateContractData {
   reference?: string;
   customer_id?: number;
 
-  // Dates
+  // Dates (API expects these field names)
+  quoted_at?: string;
+  billing_at?: string;
+  opened_at?: string;
+  opc_at?: string;
   date_ouverture?: string;
   date_envoi?: string;
   date_paiement?: string;
   date_opc?: string;
   date_apf?: string;
+
+  // Nested customer data (for creating new customer with contract)
+  customer?: {
+    lastname: string;
+    firstname: string;
+    phone: string;
+    union_id?: number;
+    address: {
+      address1: string;
+      postcode: string;
+      city: string;
+    };
+  };
+
+  // Additional fields from backend validation
+  sent_at?: string;
+  payment_at?: string;
+  apf_at?: string;
+  opened_at_range_id?: number;
+  opc_range_id?: number;
+  state_id?: number;
+  install_state_id?: number;
+  admin_status_id?: number;
+  total_price_with_taxe?: number;
+  total_price_without_taxe?: number;
+  remarks?: string;
+  variables?: any;
+  is_signed?: 'YES' | 'NO';
+  status?: 'ACTIVE' | 'DELETE';
+  company_id?: number;
+  team_id?: number;
+  meeting_id?: number;
+  financial_partner_id?: number;
+  tax_id?: number;
 
   // Access & Source
   acces_1?: string;
@@ -338,10 +376,13 @@ export interface CreateContractData {
   // Team & Staff
   regie_callcenter?: number;
   telepro_id?: number;
+  sale_1_id?: number;
+  sale_2_id?: number;
   commercial_1_id?: number;
   commercial_2_id?: number;
   manager_id?: number;
   assistant_id?: number;
+  installer_user_id?: number;
   installateur_id?: number;
   createur_id?: number;
   confirmateur_id?: number;

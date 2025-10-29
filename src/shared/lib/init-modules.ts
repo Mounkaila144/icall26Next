@@ -21,6 +21,4 @@ export const initializeModules = () => {
   // initProductsModule();
   // initOrdersModule();
   // etc.
-
-  console.log('All modules initialized successfully');
 };

@@ -89,17 +89,31 @@ export const Sidebar: React.FC = () => {
   const [expandedMenus, setExpandedMenus] = useState<Set<string>>(new Set());
   const [hoveredMenu, setHoveredMenu] = useState<string | null>(null);
 
-  console.log('🔍 [Sidebar] State:', { isLoading, hasError: !!error, menusCount: menus?.length });
-
-  // Ouvrir automatiquement le deuxième menu (index 1) par défaut
+  // Debug: Track component lifecycle
   React.useEffect(() => {
-    if (menus.length > 1 && menus[1].children && menus[1].children.length > 0) {
-      console.log('✅ [Sidebar] Auto-expanding second menu');
+    const mountId = Math.random().toString(36).substr(2, 9);
+    console.log(`🟢 [Sidebar] MOUNTED - ID: ${mountId}`);
+
+    return () => {
+      console.log(`🔴 [Sidebar] UNMOUNTED - ID: ${mountId}`);
+    };
+  }, []);
+
+  // Track state changes
+  React.useEffect(() => {
+    console.log('📊 [Sidebar] State:', { isLoading, hasError: !!error, menusCount: menus?.length });
+  }, [isLoading, error, menus?.length]);
+
+  // Ouvrir automatiquement le deuxième menu (index 1) par défaut - Run only once when menus are loaded
+  React.useEffect(() => {
+    if (menus.length > 1 && menus[1].children && menus[1].children.length > 0 && expandedMenus.size === 0) {
+      console.log('🔽 [Sidebar] Auto-expanding second menu:', menus[1].label);
       setExpandedMenus(new Set([menus[1].id]));
     }
-  }, [menus]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [menus.length]); // Only depend on menus.length, not the entire menus array
 
-  const palette = {
+  const palette = React.useMemo(() => ({
     accentGradient: '#2563eb',
     accentHover: 'rgba(37, 99, 235, 0.08)',
     accentSoft: 'rgba(37, 99, 235, 0.06)',
@@ -109,16 +123,16 @@ export const Sidebar: React.FC = () => {
     textMuted: '#64748b',
     navBackground: '#ffffff',
     navShadow: '0 4px 20px rgba(0, 0, 0, 0.06), 0 0 1px rgba(0, 0, 0, 0.05)',
-  };
+  }), []);
 
-  const getFallbackIcon = (menu: MenuItem): React.ReactElement => {
+  const getFallbackIcon = React.useCallback((menu: MenuItem): React.ReactElement => {
     const seed = `${menu.id}|${menu.path ?? ''}|${menu.label}|${menu.icon?.value ?? ''}`;
     const index = hashString(seed) % FALLBACK_ICONS.length;
     const template = FALLBACK_ICONS[index];
     return React.cloneElement(template, { key: `${menu.id}-${index}` });
-  };
+  }, []);
 
-  const toggleExpand = (menuId: string) => {
+  const toggleExpand = React.useCallback((menuId: string) => {
     setExpandedMenus((prev) => {
       const next = new Set(prev);
       if (next.has(menuId)) {
@@ -128,7 +142,7 @@ export const Sidebar: React.FC = () => {
       }
       return next;
     });
-  };
+  }, []);
 
   const isActive = (menu: MenuItem): boolean => {
     if (menu.path === pathname) {
@@ -139,6 +153,35 @@ export const Sidebar: React.FC = () => {
     }
     return false;
   };
+
+  // Calculate menus to render - MUST be before early returns to maintain Hook order
+  const menusToRender = React.useMemo(() => {
+    if (menus.length === 0) return [];
+
+    // Si le premier menu est un conteneur avec des enfants, afficher ses enfants directement
+    // Sinon, afficher tous les menus sauf le premier
+    if (menus.length === 1 && menus[0].children && menus[0].children.length > 0) {
+      // Un seul menu racine avec enfants : afficher les enfants
+      return isCollapsed
+        ? menus[0].children.flatMap((menu) => {
+            if (menu.children && menu.children.length > 0) {
+              return [menu, ...menu.children.filter(child => child.is_visible && child.is_active)];
+            }
+            return [menu];
+          })
+        : menus[0].children;
+    } else {
+      // Comportement normal : skip le premier menu
+      return isCollapsed
+        ? menus.slice(1).flatMap((menu) => {
+            if (menu.children && menu.children.length > 0) {
+              return [menu, ...menu.children.filter(child => child.is_visible && child.is_active)];
+            }
+            return [menu];
+          })
+        : menus.slice(1);
+    }
+  }, [menus, isCollapsed]);
 
   const renderMenuItem = (menu: MenuItem, level: number = 0): React.ReactNode => {
     if (!menu.is_visible || !menu.is_active) {
@@ -368,7 +411,6 @@ export const Sidebar: React.FC = () => {
   };
 
   if (isLoading) {
-    console.log('⏳ [Sidebar] Rendering loading state');
     return (
       <div
         style={{
@@ -395,7 +437,6 @@ export const Sidebar: React.FC = () => {
   }
 
   if (error) {
-    console.log('❌ [Sidebar] Rendering error state:', error);
     return (
       <div
         style={{
@@ -415,7 +456,6 @@ export const Sidebar: React.FC = () => {
   }
 
   if (menus.length === 0) {
-    console.log('⚠️ [Sidebar] Rendering empty state - no menus available');
     return (
       <div
         style={{
@@ -544,42 +584,7 @@ export const Sidebar: React.FC = () => {
         </button>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '20px' }}>
-          {(() => {
-            console.log('🔍 [Sidebar] All menus:', menus.map(m => ({ label: m.label, children: m.children?.length || 0 })));
-            console.log('🔍 [Sidebar] First menu (index 0):', menus[0]);
-            console.log('🔍 [Sidebar] Menus after slice(1):', menus.slice(1).map(m => m.label));
-
-            // Si le premier menu est un conteneur avec des enfants, afficher ses enfants directement
-            // Sinon, afficher tous les menus sauf le premier
-            let menusToRender;
-
-            if (menus.length === 1 && menus[0].children && menus[0].children.length > 0) {
-              // Un seul menu racine avec enfants : afficher les enfants
-              console.log('🔍 [Sidebar] Single root menu with children detected, rendering children');
-              menusToRender = isCollapsed
-                ? menus[0].children.flatMap((menu) => {
-                    if (menu.children && menu.children.length > 0) {
-                      return [menu, ...menu.children.filter(child => child.is_visible && child.is_active)];
-                    }
-                    return [menu];
-                  })
-                : menus[0].children;
-            } else {
-              // Comportement normal : skip le premier menu
-              menusToRender = isCollapsed
-                ? menus.slice(1).flatMap((menu) => {
-                    if (menu.children && menu.children.length > 0) {
-                      return [menu, ...menu.children.filter(child => child.is_visible && child.is_active)];
-                    }
-                    return [menu];
-                  })
-                : menus.slice(1);
-            }
-
-            console.log('✅ [Sidebar] Rendering', menusToRender.length, 'menus');
-
-            return menusToRender.map((menu) => renderMenuItem(menu, isCollapsed ? 0 : undefined));
-          })()}
+          {menusToRender.map((menu) => renderMenuItem(menu, isCollapsed ? 0 : undefined))}
         </div>
       </nav>
     </>

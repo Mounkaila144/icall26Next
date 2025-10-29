@@ -7,6 +7,7 @@
 import React, { useState } from 'react';
 import { useContracts } from '../hooks/useContracts';
 import { useSidebar } from '@/src/shared/lib/sidebar-context';
+import CreateContractModal from './CreateContractModal';
 import type { CustomerContract } from '../../types';
 
 /**
@@ -58,11 +59,13 @@ export default function ContractsList1() {
     updateFilter,
     clearFilters,
     deleteContract,
+    createContract,
   } = useContracts();
 
   const { isCollapsed } = useSidebar();
   const [searchTerm, setSearchTerm] = useState('');
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Styles
   const containerStyle: React.CSSProperties = {
@@ -326,6 +329,40 @@ export default function ContractsList1() {
 
   return (
     <div style={containerStyle}>
+      {/* Header with New Contract Button */}
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: '24px',
+      }}>
+        <div style={headerStyle}>
+          <h1 style={titleStyle}>Contracts Management</h1>
+          <p style={subtitleStyle}>Manage and track all customer contracts</p>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setIsModalOpen(true)}
+          style={{
+            ...buttonStyle,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            fontSize: '14px',
+            padding: '12px 24px',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'scale(1.05)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'scale(1)';
+          }}
+        >
+          <span style={{ fontSize: '18px' }}>+</span>
+          <span>Nouveau Contrat</span>
+        </button>
+      </div>
 
       {/* Results */}
       <div style={cardStyle}>
@@ -831,6 +868,13 @@ export default function ContractsList1() {
           transition: background-color 0.2s ease;
         }
       `}</style>
+
+      {/* Create Contract Modal */}
+      <CreateContractModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onCreate={createContract}
+      />
     </div>
   );
 }

@@ -17,25 +17,34 @@ function AdminLayoutContent({ children }: { children: ReactNode }) {
   const { isCollapsed } = useSidebar();
   const [modulesInitialized, setModulesInitialized] = useState(false);
 
+  // Debug: Track component lifecycle
+  useEffect(() => {
+    const mountId = Math.random().toString(36).substr(2, 9);
+    console.log(`🟢 [AdminLayoutContent] MOUNTED - ID: ${mountId}`);
+
+    return () => {
+      console.log(`🔴 [AdminLayoutContent] UNMOUNTED - ID: ${mountId}`);
+    };
+  }, []);
+
   // Initialize modules on mount
   useEffect(() => {
+    console.log('🔧 [AdminLayoutContent] Initializing modules...');
     initializeModules();
     setModulesInitialized(true);
-    console.log('Modules initialized in layout');
+    console.log('✅ [AdminLayoutContent] Modules initialized');
   }, []);
+
+  // Track pathname changes
+  useEffect(() => {
+    console.log('🔀 [AdminLayoutContent] Pathname changed:', pathname);
+  }, [pathname]);
 
   // Hide sidebar on login page
   const isLoginPage = pathname === '/admin/login';
 
   // Get user permissions (extracts slugs from permissions and groups)
   const userPermissions = getUserPermissions(user);
-
-  console.log('AdminLayout render:', {
-    modulesInitialized,
-    isLoginPage,
-    userPermissions,
-    pathname,
-  });
 
   if (isLoginPage) {
     return children;
@@ -92,6 +101,95 @@ function AdminLayoutContent({ children }: { children: ReactNode }) {
 export default function AdminLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const isLoginPage = pathname === '/admin/login';
+
+  // Debug: Detect full page reloads
+  useEffect(() => {
+    // Generate a unique session ID on mount
+    if (typeof window !== 'undefined') {
+      // Track mount count
+      const mountCount = parseInt(window.sessionStorage.getItem('mount_count') || '0') + 1;
+      window.sessionStorage.setItem('mount_count', mountCount.toString());
+
+      const currentSessionId = window.sessionStorage.getItem('app_session_id');
+
+      if (!currentSessionId) {
+        const sessionId = Math.random().toString(36).substr(2, 9);
+        window.sessionStorage.setItem('app_session_id', sessionId);
+        window.sessionStorage.setItem('page_load_time', new Date().toISOString());
+        console.log('🆕 [AdminLayout] NEW PAGE LOAD - Session ID:', sessionId, '- Time:', new Date().toISOString());
+      } else {
+        const pageLoadTime = window.sessionStorage.getItem('page_load_time');
+        const timeSinceLoad = pageLoadTime ? ((Date.now() - new Date(pageLoadTime).getTime()) / 1000).toFixed(2) : 'unknown';
+        console.log(`♻️ [AdminLayout] REACT RE-RENDER #${mountCount} - Session ID:`, currentSessionId, `- ${timeSinceLoad}s since page load`);
+      }
+
+      // Alert if too many mounts
+      if (mountCount > 10) {
+        console.error('🚨 [AdminLayout] TOO MANY MOUNTS! This is likely an infinite loop bug!');
+      }
+
+      // Track beforeunload (page is about to reload/close)
+      const beforeUnloadHandler = (event: BeforeUnloadEvent) => {
+        console.error('🔄 [AdminLayout] PAGE IS ABOUT TO RELOAD/CLOSE!');
+        console.trace('Stack trace:');
+      };
+      window.addEventListener('beforeunload', beforeUnloadHandler);
+
+      // Track unload (page is reloading)
+      const unloadHandler = () => {
+        console.error('🚪 [AdminLayout] PAGE IS UNLOADING (RELOAD CONFIRMED)!');
+      };
+      window.addEventListener('unload', unloadHandler);
+
+      // Track unhandled errors
+      const errorHandler = (event: ErrorEvent) => {
+        console.error('💥 [AdminLayout] UNHANDLED ERROR:', event.error);
+        console.error('💥 Error message:', event.message);
+        console.error('💥 Error stack:', event.error?.stack);
+        console.error('💥 This error might cause a page reload!');
+      };
+
+      const rejectionHandler = (event: PromiseRejectionEvent) => {
+        console.error('💥 [AdminLayout] UNHANDLED PROMISE REJECTION:', event.reason);
+        console.error('💥 This might cause a page reload!');
+      };
+
+      window.addEventListener('error', errorHandler);
+      window.addEventListener('unhandledrejection', rejectionHandler);
+
+      // Track page visibility changes
+      const visibilityHandler = () => {
+        console.log('👁️ [AdminLayout] Page visibility:', document.visibilityState);
+      };
+      document.addEventListener('visibilitychange', visibilityHandler);
+
+      // Track navigation (popstate)
+      const popstateHandler = (event: PopStateEvent) => {
+        console.log('⬅️ [AdminLayout] POPSTATE (back/forward button):', event.state);
+      };
+      window.addEventListener('popstate', popstateHandler);
+
+      // Track hashchange
+      const hashchangeHandler = () => {
+        console.log('🔗 [AdminLayout] HASH CHANGED:', window.location.hash);
+      };
+      window.addEventListener('hashchange', hashchangeHandler);
+
+      const mountId = Math.random().toString(36).substr(2, 9);
+      console.log(`🟢 [AdminLayout] ROOT MOUNTED - ID: ${mountId}`);
+
+      return () => {
+        window.removeEventListener('beforeunload', beforeUnloadHandler);
+        window.removeEventListener('unload', unloadHandler);
+        window.removeEventListener('error', errorHandler);
+        window.removeEventListener('unhandledrejection', rejectionHandler);
+        document.removeEventListener('visibilitychange', visibilityHandler);
+        window.removeEventListener('popstate', popstateHandler);
+        window.removeEventListener('hashchange', hashchangeHandler);
+        console.log(`🔴 [AdminLayout] ROOT UNMOUNTED - ID: ${mountId}`);
+      };
+    }
+  }, []);
 
   return (
     <TenantProvider>

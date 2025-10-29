@@ -19,17 +19,17 @@ export const useMenus = () => {
    * Fetch all menus (hierarchical tree from backend)
    */
   const fetchMenus = useCallback(async () => {
-    console.log('🔍 [useMenus] Fetching menus, tenantId:', tenantId);
     try {
+      console.log('📡 [useMenus] Fetching menus, tenantId:', tenantId);
       setIsLoading(true);
       setError(null);
       const data = await menuService.getMenuTree(tenantId || undefined);
-      console.log('✅ [useMenus] Received', data?.length, 'root menus');
+      console.log('✅ [useMenus] Fetched', data?.length, 'root menus');
       setMenus(data);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch menus';
+      console.error('❌ [useMenus] Fetch error:', err);
       setError(errorMessage);
-      console.error('❌ [useMenus] Error:', err);
     } finally {
       setIsLoading(false);
     }
@@ -46,7 +46,6 @@ export const useMenus = () => {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch flat menus';
       setError(errorMessage);
-      console.error('Error fetching flat menus:', err);
     }
   }, [tenantId]);
 
@@ -63,7 +62,6 @@ export const useMenus = () => {
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Failed to create menu';
         setError(errorMessage);
-        console.error('Error creating menu:', err);
         return null;
       }
     },
@@ -83,7 +81,6 @@ export const useMenus = () => {
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Failed to update menu';
         setError(errorMessage);
-        console.error('Error updating menu:', err);
         return null;
       }
     },
@@ -103,7 +100,6 @@ export const useMenus = () => {
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Failed to delete menu';
         setError(errorMessage);
-        console.error('Error deleting menu:', err);
         return false;
       }
     },
@@ -124,7 +120,6 @@ export const useMenus = () => {
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Failed to toggle visibility';
         setError(errorMessage);
-        console.error('Error toggling visibility:', err);
         return false;
       }
     },
@@ -144,7 +139,6 @@ export const useMenus = () => {
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Failed to toggle active state';
         setError(errorMessage);
-        console.error('Error toggling active state:', err);
         return false;
       }
     },
@@ -164,7 +158,6 @@ export const useMenus = () => {
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Failed to move menu';
         setError(errorMessage);
-        console.error('Error moving menu:', err);
         return false;
       }
     },
@@ -179,12 +172,19 @@ export const useMenus = () => {
     fetchMenus();
   }, [fetchMenus]);
 
-  // Initial fetch
+  // Initial fetch - Run only once on mount
   useEffect(() => {
-    console.log('🔍 [useMenus] Initial fetch triggered');
+    const mountId = Math.random().toString(36).substr(2, 9);
+    console.log(`🟢 [useMenus] MOUNTED - ID: ${mountId}, tenantId: ${tenantId}`);
+
     fetchMenus();
     fetchFlatMenus();
-  }, [fetchMenus, fetchFlatMenus]);
+
+    return () => {
+      console.log(`🔴 [useMenus] UNMOUNTED - ID: ${mountId}`);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty dependency array - fetch only on mount
 
   return {
     menus,
@@ -220,7 +220,6 @@ export const useMenu = (id: string) => {
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Failed to fetch menu';
         setError(errorMessage);
-        console.error('Error fetching menu:', err);
       } finally {
         setIsLoading(false);
       }

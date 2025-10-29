@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, ReactNode, useState, useEffect } from 'react';
+import { createContext, useContext, ReactNode, useState, useEffect, useMemo, useCallback } from 'react';
 
 interface TenantContextType {
     tenantId: string | null;
@@ -15,13 +15,15 @@ export function TenantProvider({ children }: { children: ReactNode }) {
     const [tenantId, setTenantIdState] = useState<string | null>(null);
     const [domain, setDomainState] = useState<string | null>(null);
 
-    const setTenantId = (id: string | null) => {
+    const setTenantId = useCallback((id: string | null) => {
+        console.log('🏢 [TenantProvider] setTenantId called:', id);
         setTenantIdState(id);
-    };
+    }, []);
 
-    const setDomain = (d: string | null) => {
+    const setDomain = useCallback((d: string | null) => {
+        console.log('🌐 [TenantProvider] setDomain called:', d);
         setDomainState(d);
-    };
+    }, []);
 
     // Load tenant data from localStorage on mount
     useEffect(() => {
@@ -29,10 +31,7 @@ export function TenantProvider({ children }: { children: ReactNode }) {
             const storedTenantId = localStorage.getItem('tenant_id');
             const storedDomain = localStorage.getItem('tenant_domain');
 
-            console.log('🔍 [TenantProvider] Loaded from storage:', {
-                tenantId: storedTenantId,
-                domain: storedDomain || window.location.hostname
-            });
+            console.log('🔄 [TenantProvider] Loading from storage:', { storedTenantId, storedDomain });
 
             if (storedTenantId) setTenantId(storedTenantId);
             if (storedDomain) {
@@ -41,7 +40,7 @@ export function TenantProvider({ children }: { children: ReactNode }) {
                 setDomain(window.location.hostname);
             }
         }
-    }, []);
+    }, [setTenantId, setDomain]);
 
     // Persist to localStorage when tenantId or domain changes
     useEffect(() => {
@@ -64,8 +63,18 @@ export function TenantProvider({ children }: { children: ReactNode }) {
         }
     }, [domain]);
 
+    // Memoize the context value to prevent unnecessary re-renders
+    const value = useMemo(() => ({
+        tenantId,
+        domain,
+        setTenantId,
+        setDomain
+    }), [tenantId, domain, setTenantId, setDomain]);
+
+    console.log('🔁 [TenantProvider] Rendering with:', { tenantId, domain });
+
     return (
-        <TenantContext.Provider value={{ tenantId, domain, setTenantId, setDomain }}>
+        <TenantContext.Provider value={value}>
             {children}
         </TenantContext.Provider>
     );
