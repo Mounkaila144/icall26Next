@@ -128,13 +128,29 @@ export interface CustomerContract {
 
   // Customer (nested object)
   customer: ContractCustomer;
+  customer_id: number;
 
-  // Dates
+  // Dates (both old and new field names for compatibility)
+  quoted_at?: string | null;
+  billing_at?: string | null;
   date_ouverture: string | null;
   date_envoi: string | null;
   date_paiement: string | null;
   date_opc: string | null;
   date_apf: string | null;
+
+  // Additional IDs
+  meeting_id?: number | null;
+  financial_partner_id?: number | null;
+  tax_id?: number | null;
+  team_id?: number | null;
+  opened_at_range_id?: number | null;
+  opc_range_id?: number | null;
+  company_id?: number | null;
+
+  // Signature status
+  is_signed?: 'YES' | 'NO';
+  variables?: any;
 
   // Access & Source
   acces_1: string | null;

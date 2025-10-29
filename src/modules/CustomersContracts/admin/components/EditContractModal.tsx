@@ -1,16 +1,17 @@
 // ============================================================================
-// CustomersContracts Module - Create Contract Modal Component with Collapsible Sections
+// CustomersContracts Module - Edit Contract Modal Component with Collapsible Sections
 // ============================================================================
 
 'use client';
 
-import React, { useState, useCallback, useMemo } from 'react';
-import type { CreateContractData } from '../../types';
+import React, { useState, useEffect, useCallback } from 'react';
+import type { CreateContractData, CustomerContract } from '../../types';
 
-interface CreateContractModalProps {
+interface EditContractModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreate: (data: CreateContractData) => Promise<void>;
+  onUpdate: (id: number, data: CreateContractData) => Promise<void>;
+  contract: CustomerContract | null;
 }
 
 // Collapsible Section Component (moved outside to prevent re-renders)
@@ -73,20 +74,15 @@ const CollapsibleSection = React.memo(({
   );
 });
 
-export default function CreateContractModal({ isOpen, onClose, onCreate }: CreateContractModalProps) {
+export default function EditContractModal({ isOpen, onClose, onUpdate, contract }: EditContractModalProps) {
   const [formData, setFormData] = useState<CreateContractData>({
-    // Required dates
     quoted_at: '',
     billing_at: '',
     opc_at: '',
     opened_at: '',
-
-    // Optional dates
     sent_at: '',
     payment_at: '',
     apf_at: '',
-
-    // IDs
     reference: '',
     customer_id: undefined,
     meeting_id: undefined,
@@ -105,18 +101,12 @@ export default function CreateContractModal({ isOpen, onClose, onCreate }: Creat
     install_state_id: undefined,
     admin_status_id: undefined,
     company_id: undefined,
-
-    // Prices
     total_price_with_taxe: undefined,
     total_price_without_taxe: undefined,
-
-    // Other
     remarks: '',
     variables: undefined,
     is_signed: 'NO',
     status: 'ACTIVE',
-
-    // Required customer info
     customer: {
       lastname: '',
       firstname: '',
@@ -128,8 +118,6 @@ export default function CreateContractModal({ isOpen, onClose, onCreate }: Creat
         city: '',
       },
     },
-
-    // Products
     products: [],
   });
 
@@ -146,6 +134,78 @@ export default function CreateContractModal({ isOpen, onClose, onCreate }: Creat
     products: false,
     other: false,
   });
+
+  // Load contract data when modal opens
+  useEffect(() => {
+    if (isOpen && contract) {
+      // Helper to format date from API format to input format
+      const formatDate = (dateString: string | null) => {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        return date.toISOString().split('T')[0];
+      };
+
+      setFormData({
+        // Dates
+        quoted_at: formatDate(contract.quoted_at || null),
+        billing_at: formatDate(contract.billing_at || null),
+        opc_at: formatDate(contract.date_opc),
+        opened_at: formatDate(contract.date_ouverture),
+        sent_at: formatDate(contract.date_envoi),
+        payment_at: formatDate(contract.date_paiement),
+        apf_at: formatDate(contract.date_apf),
+
+        // IDs
+        reference: contract.reference || '',
+        customer_id: contract.customer_id,
+        meeting_id: contract.meeting_id || undefined,
+        financial_partner_id: contract.financial_partner_id || undefined,
+        tax_id: contract.tax_id || undefined,
+        team_id: contract.team_id || undefined,
+        telepro_id: contract.telepro_id || undefined,
+        sale_1_id: contract.commercial_1_id || undefined,
+        sale_2_id: contract.commercial_2_id || undefined,
+        manager_id: contract.manager_id || undefined,
+        assistant_id: contract.assistant_id || undefined,
+        installer_user_id: contract.installateur_id || undefined,
+        opened_at_range_id: contract.opened_at_range_id || undefined,
+        opc_range_id: contract.opc_range_id || undefined,
+        state_id: contract.status_contrat_id || undefined,
+        install_state_id: contract.status_installation_id || undefined,
+        admin_status_id: contract.status_admin_id || undefined,
+        company_id: contract.company_id || undefined,
+
+        // Prices
+        total_price_with_taxe: contract.montant_ttc || undefined,
+        total_price_without_taxe: contract.montant_ht || undefined,
+
+        // Other
+        remarks: contract.remarques || '',
+        variables: contract.variables || undefined,
+        is_signed: contract.is_signed || 'NO',
+        status: contract.status_flag || 'ACTIVE',
+
+        // Customer info
+        customer: {
+          lastname: contract.customer?.lastname || '',
+          firstname: contract.customer?.firstname || '',
+          phone: contract.customer?.phone || contract.customer?.telephone || '',
+          union_id: contract.customer?.union_id || undefined,
+          address: {
+            address1: contract.customer?.address?.address1 || '',
+            postcode: contract.customer?.address?.postcode || '',
+            city: contract.customer?.address?.city || '',
+          },
+        },
+
+        // Products
+        products: contract.products?.map(p => ({
+          product_id: p.product_id,
+          details: p.details,
+        })) || [],
+      });
+    }
+  }, [isOpen, contract]);
 
   const toggleSection = useCallback((section: keyof typeof openSections) => {
     setOpenSections(prev => ({
@@ -195,6 +255,8 @@ export default function CreateContractModal({ isOpen, onClose, onCreate }: Creat
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!contract) return;
+
     setError(null);
     setLoading(true);
 
@@ -204,65 +266,18 @@ export default function CreateContractModal({ isOpen, onClose, onCreate }: Creat
         Object.entries(formData).filter(([_, v]) => v !== undefined && v !== '')
       );
 
-      await onCreate(cleanData as CreateContractData);
-
-      // Reset form
-      setFormData({
-        quoted_at: '',
-        billing_at: '',
-        opc_at: '',
-        opened_at: '',
-        sent_at: '',
-        payment_at: '',
-        apf_at: '',
-        reference: '',
-        customer_id: undefined,
-        meeting_id: undefined,
-        financial_partner_id: undefined,
-        tax_id: undefined,
-        team_id: undefined,
-        telepro_id: undefined,
-        sale_1_id: undefined,
-        sale_2_id: undefined,
-        manager_id: undefined,
-        assistant_id: undefined,
-        installer_user_id: undefined,
-        opened_at_range_id: undefined,
-        opc_range_id: undefined,
-        state_id: undefined,
-        install_state_id: undefined,
-        admin_status_id: undefined,
-        company_id: undefined,
-        total_price_with_taxe: undefined,
-        total_price_without_taxe: undefined,
-        remarks: '',
-        variables: undefined,
-        is_signed: 'NO',
-        status: 'ACTIVE',
-        customer: {
-          lastname: '',
-          firstname: '',
-          phone: '',
-          union_id: undefined,
-          address: {
-            address1: '',
-            postcode: '',
-            city: '',
-          },
-        },
-        products: [],
-      });
+      await onUpdate(contract.id, cleanData as CreateContractData);
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create contract');
+      setError(err instanceof Error ? err.message : 'Failed to update contract');
     } finally {
       setLoading(false);
     }
   };
 
-  if (!isOpen) return null;
+  if (!isOpen || !contract) return null;
 
-  // Styles
+  // Styles (same as CreateContractModal)
   const overlayStyle: React.CSSProperties = {
     position: 'fixed',
     top: 0,
@@ -301,6 +316,12 @@ export default function CreateContractModal({ isOpen, onClose, onCreate }: Creat
     WebkitBackgroundClip: 'text',
     WebkitTextFillColor: 'transparent',
     margin: 0,
+  };
+
+  const subtitleStyle: React.CSSProperties = {
+    fontSize: '14px',
+    color: '#888',
+    marginTop: '8px',
   };
 
   const collapsibleHeaderStyle: React.CSSProperties = {
@@ -416,7 +437,8 @@ export default function CreateContractModal({ isOpen, onClose, onCreate }: Creat
     <div style={overlayStyle} onClick={onClose}>
       <div style={modalStyle} onClick={(e) => e.stopPropagation()}>
         <div style={headerStyle}>
-          <h2 style={titleStyle}>Nouveau Contrat</h2>
+          <h2 style={titleStyle}>Modifier le Contrat</h2>
+          <p style={subtitleStyle}>Référence: {contract.reference}</p>
         </div>
 
         {error && <div style={errorStyle}>{error}</div>}
@@ -1029,7 +1051,7 @@ export default function CreateContractModal({ isOpen, onClose, onCreate }: Creat
                 value={formData.reference}
                 onChange={handleInputChange}
                 style={inputStyle}
-                placeholder="Sera généré automatiquement si vide"
+                disabled
               />
             </div>
 
@@ -1049,7 +1071,7 @@ export default function CreateContractModal({ isOpen, onClose, onCreate }: Creat
 
             <div style={formGroupStyle}>
               <label style={labelStyle} htmlFor="customer_id">
-                Client Existant ID (optionnel)
+                Client ID
               </label>
               <input
                 type="number"
@@ -1058,7 +1080,7 @@ export default function CreateContractModal({ isOpen, onClose, onCreate }: Creat
                 value={formData.customer_id || ''}
                 onChange={handleInputChange}
                 style={inputStyle}
-                placeholder="Laisser vide pour créer un nouveau client"
+                disabled
               />
             </div>
           </CollapsibleSection>
@@ -1088,7 +1110,7 @@ export default function CreateContractModal({ isOpen, onClose, onCreate }: Creat
                 cursor: loading ? 'not-allowed' : 'pointer',
               }}
             >
-              {loading ? 'Création en cours...' : 'Créer le Contrat'}
+              {loading ? 'Mise à jour en cours...' : 'Mettre à Jour'}
             </button>
           </div>
         </form>

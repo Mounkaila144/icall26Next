@@ -8,6 +8,7 @@ import React, { useState } from 'react';
 import { useContracts } from '../hooks/useContracts';
 import { useSidebar } from '@/src/shared/lib/sidebar-context';
 import CreateContractModal from './CreateContractModal';
+import EditContractModal from './EditContractModal';
 import type { CustomerContract } from '../../types';
 
 /**
@@ -60,12 +61,15 @@ export default function ContractsList1() {
     clearFilters,
     deleteContract,
     createContract,
+    updateContract,
   } = useContracts();
 
   const { isCollapsed } = useSidebar();
   const [searchTerm, setSearchTerm] = useState('');
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedContract, setSelectedContract] = useState<CustomerContract | null>(null);
 
   // Styles
   const containerStyle: React.CSSProperties = {
@@ -310,6 +314,15 @@ export default function ContractsList1() {
     await deleteContract(id);
   };
 
+  const handleEdit = (contract: CustomerContract) => {
+    setSelectedContract(contract);
+    setIsEditModalOpen(true);
+  };
+
+  const handleRowDoubleClick = (contract: CustomerContract) => {
+    handleEdit(contract);
+  };
+
   const handleClearFilters = () => {
     setSearchTerm('');
     clearFilters();
@@ -343,7 +356,7 @@ export default function ContractsList1() {
 
         <button
           type="button"
-          onClick={() => setIsModalOpen(true)}
+          onClick={() => setIsCreateModalOpen(true)}
           style={{
             ...buttonStyle,
             display: 'flex',
@@ -565,7 +578,11 @@ export default function ContractsList1() {
                   {Array.isArray(contracts) && contracts.map((contract, index) => {
                     const rowBg = index % 2 === 0 ? 'white' : '#fafafa';
                     return (
-                    <tr key={contract.id}>
+                    <tr
+                      key={contract.id}
+                      onDoubleClick={() => handleRowDoubleClick(contract)}
+                      style={{ cursor: 'pointer' }}
+                    >
                       {/* ID - Sticky */}
                       <td style={{
                         ...tdStickyStyle,
@@ -764,18 +781,47 @@ export default function ContractsList1() {
 
                       {/* Actions */}
                       <td style={tdStyle}>
-                        <button
-                          onClick={() => handleDelete(contract.id)}
-                          style={deleteButtonStyle}
-                          onMouseOver={(e) => {
-                            e.currentTarget.style.background = '#c82333';
-                          }}
-                          onMouseOut={(e) => {
-                            e.currentTarget.style.background = '#dc3545';
-                          }}
-                        >
-                          Delete
-                        </button>
+                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEdit(contract);
+                            }}
+                            style={{
+                              padding: '6px 12px',
+                              background: '#667eea',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '6px',
+                              fontSize: '13px',
+                              cursor: 'pointer',
+                              transition: 'background 0.2s',
+                            }}
+                            onMouseOver={(e) => {
+                              e.currentTarget.style.background = '#5568d3';
+                            }}
+                            onMouseOut={(e) => {
+                              e.currentTarget.style.background = '#667eea';
+                            }}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDelete(contract.id);
+                            }}
+                            style={deleteButtonStyle}
+                            onMouseOver={(e) => {
+                              e.currentTarget.style.background = '#c82333';
+                            }}
+                            onMouseOut={(e) => {
+                              e.currentTarget.style.background = '#dc3545';
+                            }}
+                          >
+                            Delete
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -871,9 +917,20 @@ export default function ContractsList1() {
 
       {/* Create Contract Modal */}
       <CreateContractModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
         onCreate={createContract}
+      />
+
+      {/* Edit Contract Modal */}
+      <EditContractModal
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setSelectedContract(null);
+        }}
+        onUpdate={updateContract}
+        contract={selectedContract}
       />
     </div>
   );
