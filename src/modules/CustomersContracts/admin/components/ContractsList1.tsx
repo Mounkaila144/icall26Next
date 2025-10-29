@@ -43,6 +43,182 @@ const StatusBadge: React.FC<StatusBadgeProps> = ({ name, color, icon }) => {
 };
 
 /**
+ * ActionsDropdown Component - Dropdown menu for contract actions
+ */
+interface ActionsDropdownProps {
+  contract: CustomerContract;
+  onEdit: () => void;
+  onDelete: () => void;
+}
+
+const ActionsDropdown: React.FC<ActionsDropdownProps> = ({ contract, onEdit, onDelete }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const buttonStyle: React.CSSProperties = {
+    padding: '6px 12px',
+    background: 'rgb(30, 58, 138)',
+    color: 'white',
+    border: 'none',
+    borderRadius: '6px',
+    fontSize: '13px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    transition: 'all 0.2s',
+  };
+
+  const dropdownContainerStyle: React.CSSProperties = {
+    position: 'relative',
+    display: 'inline-block',
+  };
+
+  const dropdownMenuStyle: React.CSSProperties = {
+    position: 'absolute',
+    top: '100%',
+    right: 0,
+    marginTop: '4px',
+    background: 'white',
+    border: '1px solid #e0e0e0',
+    borderRadius: '8px',
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+    minWidth: '180px',
+    zIndex: 9999,
+    overflow: 'hidden',
+  };
+
+  const menuItemStyle: React.CSSProperties = {
+    padding: '10px 16px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    cursor: 'pointer',
+    transition: 'background 0.2s',
+    fontSize: '14px',
+    border: 'none',
+    width: '100%',
+    textAlign: 'left',
+    background: 'transparent',
+  };
+
+  const handleAction = (e: React.MouseEvent, action: () => void) => {
+    e.stopPropagation();
+    action();
+    setIsOpen(false);
+  };
+
+  return (
+    <div style={dropdownContainerStyle}>
+      <button
+        style={buttonStyle}
+        onClick={(e) => {
+          e.stopPropagation();
+          setIsOpen(!isOpen);
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'scale(1.05)';
+          e.currentTarget.style.background = 'rgb(23, 45, 107)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'scale(1)';
+          e.currentTarget.style.background = 'rgb(30, 58, 138)';
+        }}
+      >
+        <span>⚙️</span>
+        <span>Actions</span>
+        <span style={{
+          transition: 'transform 0.3s',
+          transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+          fontSize: '10px',
+        }}>▼</span>
+      </button>
+
+      {isOpen && (
+        <>
+          {/* Overlay to close dropdown when clicking outside */}
+          <div
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: 9998,
+            }}
+            onClick={() => setIsOpen(false)}
+          />
+
+          <div style={dropdownMenuStyle}>
+            <button
+              style={menuItemStyle}
+              onClick={(e) => handleAction(e, onEdit)}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = '#f5f5ff';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'transparent';
+              }}
+            >
+              <span style={{ fontSize: '16px' }}>✏️</span>
+              <span style={{ color: '#667eea', fontWeight: '500' }}>Modifier</span>
+            </button>
+
+            <button
+              style={menuItemStyle}
+              onClick={(e) => handleAction(e, () => {
+                navigator.clipboard.writeText(contract.reference);
+              })}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = '#f5f5ff';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'transparent';
+              }}
+            >
+              <span style={{ fontSize: '16px' }}>📋</span>
+              <span style={{ color: '#28a745', fontWeight: '500' }}>Copier Réf</span>
+            </button>
+
+            <button
+              style={menuItemStyle}
+              onClick={(e) => handleAction(e, () => {
+                window.open(`/admin/contracts/${contract.id}`, '_blank');
+              })}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = '#f5f5ff';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'transparent';
+              }}
+            >
+              <span style={{ fontSize: '16px' }}>👁️</span>
+              <span style={{ color: '#17a2b8', fontWeight: '500' }}>Voir Détails</span>
+            </button>
+
+            <div style={{ height: '1px', background: '#e0e0e0', margin: '4px 0' }} />
+
+            <button
+              style={menuItemStyle}
+              onClick={(e) => handleAction(e, onDelete)}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = '#fee';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'transparent';
+              }}
+            >
+              <span style={{ fontSize: '16px' }}>🗑️</span>
+              <span style={{ color: '#dc3545', fontWeight: '500' }}>Supprimer</span>
+            </button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
+
+/**
  * Main Contracts List Component
  */
 export default function ContractsList1() {
@@ -521,6 +697,7 @@ export default function ContractsList1() {
                   {/* Group Headers Row */}
                   <tr>
                     <th style={thStickyStyle} rowSpan={2}>ID</th>
+                    <th style={{...thStyle, background: 'rgb(30, 58, 138)', color: 'white'}} rowSpan={2}>Actions</th>
                     <th style={groupHeaderStyle} colSpan={4}>📋 INFORMATIONS CLIENT</th>
                     <th style={groupHeaderStyle} colSpan={2}>💰 FINANCIER</th>
                     <th style={groupHeaderStyle} colSpan={7}>🏢 PROJET</th>
@@ -529,7 +706,6 @@ export default function ContractsList1() {
                     <th style={groupHeaderStyle} colSpan={3}>📸 VALIDATIONS</th>
                     <th style={groupHeaderStyle} colSpan={4}>📊 RAPPORTS</th>
                     <th style={groupHeaderStyle} colSpan={3}>🔧 AUTRES</th>
-                    <th style={thStyle} rowSpan={2}>Actions</th>
                   </tr>
                   {/* Column Headers Row */}
                   <tr>
@@ -589,6 +765,18 @@ export default function ContractsList1() {
                         backgroundColor: rowBg,
                       }}>
                         <strong style={{ color: '#667eea' }}>{contract.id}</strong>
+                      </td>
+
+                      {/* Actions */}
+                      <td style={{
+                        ...tdStyle,
+                        backgroundColor: 'rgba(30, 58, 138, 0.08)',
+                      }}>
+                        <ActionsDropdown
+                          contract={contract}
+                          onEdit={() => handleEdit(contract)}
+                          onDelete={() => handleDelete(contract.id)}
+                        />
                       </td>
 
                       {/* Nom Prénom */}
@@ -777,51 +965,6 @@ export default function ContractsList1() {
                         >
                           {contract.actif ? 'Actif' : 'Supprimé'}
                         </span>
-                      </td>
-
-                      {/* Actions */}
-                      <td style={tdStyle}>
-                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleEdit(contract);
-                            }}
-                            style={{
-                              padding: '6px 12px',
-                              background: '#667eea',
-                              color: 'white',
-                              border: 'none',
-                              borderRadius: '6px',
-                              fontSize: '13px',
-                              cursor: 'pointer',
-                              transition: 'background 0.2s',
-                            }}
-                            onMouseOver={(e) => {
-                              e.currentTarget.style.background = '#5568d3';
-                            }}
-                            onMouseOut={(e) => {
-                              e.currentTarget.style.background = '#667eea';
-                            }}
-                          >
-                            Edit
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDelete(contract.id);
-                            }}
-                            style={deleteButtonStyle}
-                            onMouseOver={(e) => {
-                              e.currentTarget.style.background = '#c82333';
-                            }}
-                            onMouseOut={(e) => {
-                              e.currentTarget.style.background = '#dc3545';
-                            }}
-                          >
-                            Delete
-                          </button>
-                        </div>
                       </td>
                     </tr>
                   );
