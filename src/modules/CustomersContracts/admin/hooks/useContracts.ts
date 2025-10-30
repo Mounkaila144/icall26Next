@@ -44,6 +44,7 @@ interface UseContractsReturn {
   deleteContract: (id: number) => Promise<boolean>;
   createContract: (data: CreateContractData) => Promise<void>;
   updateContract: (id: number, data: UpdateContractData) => Promise<void>;
+  getContract: (id: number) => Promise<CustomerContract | null>;
 }
 
 const defaultFilters: ContractFilters = {
@@ -243,6 +244,27 @@ export const useContracts = (initialFilters?: Partial<ContractFilters>): UseCont
   );
 
   /**
+   * Get a single contract by ID with full details
+   */
+  const getContract = useCallback(
+    async (id: number): Promise<CustomerContract | null> => {
+      try {
+        const response = await contractsService.getContract(id);
+
+        if (response.success) {
+          return response.data;
+        } else {
+          throw new Error('Failed to fetch contract');
+        }
+      } catch (err) {
+        console.error(`Error fetching contract ${id}:`, err);
+        return null;
+      }
+    },
+    []
+  );
+
+  /**
    * Update perPage and reset to first page
    */
   const handleSetPerPage = useCallback((newPerPage: number) => {
@@ -288,5 +310,6 @@ export const useContracts = (initialFilters?: Partial<ContractFilters>): UseCont
     deleteContract,
     createContract,
     updateContract,
+    getContract,
   };
 };

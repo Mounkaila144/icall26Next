@@ -238,6 +238,7 @@ export default function ContractsList1() {
     deleteContract,
     createContract,
     updateContract,
+    getContract,
   } = useContracts();
 
   const { isCollapsed } = useSidebar();
@@ -245,7 +246,7 @@ export default function ContractsList1() {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [selectedContract, setSelectedContract] = useState<CustomerContract | null>(null);
+  const [selectedContractId, setSelectedContractId] = useState<number | null>(null);
 
   // Styles
   const containerStyle: React.CSSProperties = {
@@ -490,13 +491,13 @@ export default function ContractsList1() {
     await deleteContract(id);
   };
 
-  const handleEdit = (contract: CustomerContract) => {
-    setSelectedContract(contract);
+  const handleEdit = (contractId: number) => {
+    setSelectedContractId(contractId);
     setIsEditModalOpen(true);
   };
 
-  const handleRowDoubleClick = (contract: CustomerContract) => {
-    handleEdit(contract);
+  const handleRowDoubleClick = (contractId: number) => {
+    handleEdit(contractId);
   };
 
   const handleClearFilters = () => {
@@ -756,7 +757,7 @@ export default function ContractsList1() {
                     return (
                     <tr
                       key={contract.id}
-                      onDoubleClick={() => handleRowDoubleClick(contract)}
+                      onDoubleClick={() => handleRowDoubleClick(contract.id)}
                       style={{ cursor: 'pointer' }}
                     >
                       {/* ID - Sticky */}
@@ -774,7 +775,7 @@ export default function ContractsList1() {
                       }}>
                         <ActionsDropdown
                           contract={contract}
-                          onEdit={() => handleEdit(contract)}
+                          onEdit={() => handleEdit(contract.id)}
                           onDelete={() => handleDelete(contract.id)}
                         />
                       </td>
@@ -1070,10 +1071,11 @@ export default function ContractsList1() {
         isOpen={isEditModalOpen}
         onClose={() => {
           setIsEditModalOpen(false);
-          setSelectedContract(null);
+          setSelectedContractId(null);
         }}
         onUpdate={updateContract}
-        contract={selectedContract}
+        contractId={selectedContractId}
+        onFetchContract={getContract}
       />
     </div>
   );

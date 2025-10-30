@@ -42,22 +42,26 @@ export interface CustomerAddress {
 
 export interface ContractCustomer {
   id: number;
-  company: string;
-  gender: string;
+  company?: string;
+  gender?: string | null;
   firstname: string;
   lastname: string;
-  nom_prenom: string;
-  email: string;
+  nom_prenom?: string;
+  email?: string;
   phone: string;
-  mobile: string;
-  mobile2: string;
-  phone1: string;
-  telephone: string;
-  birthday: string | null;
-  age: string;
-  occupation: string;
-  salary: string;
-  address: CustomerAddress;
+  mobile?: string;
+  mobile2?: string;
+  phone1?: string;
+  telephone?: string;
+  birthday?: string | null;
+  age?: string | null;
+  occupation?: string | null;
+  salary?: string | null;
+  union_id?: number;
+  address?: CustomerAddress;
+  status?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 // ----------------------------------------------------------------------------
@@ -127,17 +131,22 @@ export interface CustomerContract {
   reference: string;
 
   // Customer (nested object)
-  customer: ContractCustomer;
+  customer?: ContractCustomer;
   customer_id: number;
 
   // Dates (both old and new field names for compatibility)
   quoted_at?: string | null;
   billing_at?: string | null;
-  date_ouverture: string | null;
-  date_envoi: string | null;
-  date_paiement: string | null;
-  date_opc: string | null;
-  date_apf: string | null;
+  opened_at?: string | null;
+  sent_at?: string | null;
+  payment_at?: string | null;
+  opc_at?: string | null;
+  apf_at?: string | null;
+  date_ouverture?: string | null;
+  date_envoi?: string | null;
+  date_paiement?: string | null;
+  date_opc?: string | null;
+  date_apf?: string | null;
 
   // Additional IDs
   meeting_id?: number | null;
@@ -160,26 +169,35 @@ export interface CustomerContract {
   surface_parcelle: string | null;
   societe_porteuse: string | null;
 
-  // Team & Staff IDs
-  regie_callcenter: number;
-  telepro_id: number;
-  commercial_1_id: number;
-  commercial_2_id: number;
-  manager_id: number;
-  assistant_id: number;
-  installateur_id: number | null;
-  createur_id: number | null;
-  confirmateur_id: number | null;
-  equipe_installation: string | null;
-  sous_traitant_id: number | null;
+  // Team & Staff IDs (support both naming conventions)
+  regie_callcenter?: number;
+  telepro_id?: number;
+  commercial_1_id?: number;
+  commercial_2_id?: number;
+  sale_1_id?: number;
+  sale_2_id?: number;
+  manager_id?: number;
+  assistant_id?: number;
+  installateur_id?: number | null;
+  installer_user_id?: number | null;
+  createur_id?: number | null;
+  confirmateur_id?: number | null;
+  equipe_installation?: string | null;
+  sous_traitant_id?: number | null;
 
-  // Status Fields
-  status_contrat_id: number;
-  status_contrat: ContractStatus;
-  status_installation_id: number | null;
+  // Status Fields (support both naming conventions)
+  status_contrat_id?: number;
+  status_contrat?: ContractStatus;
+  state_id?: number;
+  contract_status?: ContractStatus;
+  status_installation_id?: number | null;
   status_installation?: ContractInstallStatus | null;
-  status_admin_id: number | null;
+  install_state_id?: number | null;
+  install_status?: ContractInstallStatus | null;
+  status_admin_id?: number | null;
   status_admin?: ContractAdminStatus | null;
+  admin_status_id?: number | null;
+  admin_status?: ContractAdminStatus | null;
 
   // Boolean Flags
   confirme: boolean;
@@ -196,16 +214,22 @@ export interface CustomerContract {
   rapport_attribution: string | null;
   rapport_installation: string | null;
 
-  // Financial
-  montant_ttc: number;
-  montant_ht: number;
+  // Financial (support both naming conventions)
+  montant_ttc?: number;
+  montant_ht?: number;
+  total_price_with_taxe?: number;
+  total_price_without_taxe?: number;
+  mensuality?: number;
+  advance_payment?: number;
 
   // Other Fields
-  campaign_id: number | null;
-  esclave: string | null;
-  actif: boolean;
-  status_flag: 'ACTIVE' | 'DELETE';
-  remarques: string;
+  campaign_id?: number | null;
+  esclave?: string | null;
+  actif?: boolean;
+  status_flag?: 'ACTIVE' | 'DELETE';
+  remarques?: string;
+  remarks?: string;
+  sav_at_range_id?: number;
 
   // Relations (optional, loaded on demand)
   products?: ContractProduct[];

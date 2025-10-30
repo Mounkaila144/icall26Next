@@ -11,7 +11,8 @@ interface EditContractModalProps {
   isOpen: boolean;
   onClose: () => void;
   onUpdate: (id: number, data: CreateContractData) => Promise<void>;
-  contract: CustomerContract | null;
+  contractId: number | null;
+  onFetchContract: (id: number) => Promise<CustomerContract | null>;
 }
 
 // Collapsible Section Component (moved outside to prevent re-renders)
@@ -74,7 +75,9 @@ const CollapsibleSection = React.memo(({
   );
 });
 
-export default function EditContractModal({ isOpen, onClose, onUpdate, contract }: EditContractModalProps) {
+export default function EditContractModal({ isOpen, onClose, onUpdate, contractId, onFetchContract }: EditContractModalProps) {
+  const [contract, setContract] = useState<CustomerContract | null>(null);
+  const [loadingContract, setLoadingContract] = useState(false);
   const [formData, setFormData] = useState<CreateContractData>({
     quoted_at: '',
     billing_at: '',
@@ -111,7 +114,6 @@ export default function EditContractModal({ isOpen, onClose, onUpdate, contract 
       lastname: '',
       firstname: '',
       phone: '',
-      union_id: undefined,
       address: {
         address1: '',
         postcode: '',
@@ -137,75 +139,96 @@ export default function EditContractModal({ isOpen, onClose, onUpdate, contract 
 
   // Load contract data when modal opens
   useEffect(() => {
-    if (isOpen && contract) {
-      // Helper to format date from API format to input format
-      const formatDate = (dateString: string | null) => {
-        if (!dateString) return '';
-        const date = new Date(dateString);
-        return date.toISOString().split('T')[0];
-      };
+    const loadContract = async () => {
+      if (isOpen && contractId) {
+        setLoadingContract(true);
+        setError(null);
 
-      setFormData({
-        // Dates
-        quoted_at: formatDate(contract.quoted_at || null),
-        billing_at: formatDate(contract.billing_at || null),
-        opc_at: formatDate(contract.date_opc),
-        opened_at: formatDate(contract.date_ouverture),
-        sent_at: formatDate(contract.date_envoi),
-        payment_at: formatDate(contract.date_paiement),
-        apf_at: formatDate(contract.date_apf),
+        try {
+          const fetchedContract = await onFetchContract(contractId);
 
-        // IDs
-        reference: contract.reference || '',
-        customer_id: contract.customer_id,
-        meeting_id: contract.meeting_id || undefined,
-        financial_partner_id: contract.financial_partner_id || undefined,
-        tax_id: contract.tax_id || undefined,
-        team_id: contract.team_id || undefined,
-        telepro_id: contract.telepro_id || undefined,
-        sale_1_id: contract.commercial_1_id || undefined,
-        sale_2_id: contract.commercial_2_id || undefined,
-        manager_id: contract.manager_id || undefined,
-        assistant_id: contract.assistant_id || undefined,
-        installer_user_id: contract.installateur_id || undefined,
-        opened_at_range_id: contract.opened_at_range_id || undefined,
-        opc_range_id: contract.opc_range_id || undefined,
-        state_id: contract.status_contrat_id || undefined,
-        install_state_id: contract.status_installation_id || undefined,
-        admin_status_id: contract.status_admin_id || undefined,
-        company_id: contract.company_id || undefined,
+          if (fetchedContract) {
+            setContract(fetchedContract);
 
-        // Prices
-        total_price_with_taxe: contract.montant_ttc || undefined,
-        total_price_without_taxe: contract.montant_ht || undefined,
+            // Helper to format date from API format to input format
+            const formatDate = (dateString: string | null | undefined) => {
+              if (!dateString) return '';
+              const date = new Date(dateString);
+              return date.toISOString().split('T')[0];
+            };
 
-        // Other
-        remarks: contract.remarques || '',
-        variables: contract.variables || undefined,
-        is_signed: contract.is_signed || 'NO',
-        status: contract.status_flag || 'ACTIVE',
+            setFormData({
+              // Dates - use the correct field names from API response
+              quoted_at: formatDate(fetchedContract.quoted_at),
+              billing_at: formatDate(fetchedContract.billing_at),
+              opc_at: formatDate(fetchedContract.opc_at),
+              opened_at: formatDate(fetchedContract.opened_at),
+              sent_at: formatDate(fetchedContract.sent_at),
+              payment_at: formatDate(fetchedContract.payment_at),
+              apf_at: formatDate(fetchedContract.apf_at),
 
-        // Customer info
-        customer: {
-          lastname: contract.customer?.lastname || '',
-          firstname: contract.customer?.firstname || '',
-          phone: contract.customer?.phone || contract.customer?.telephone || '',
-          union_id: contract.customer?.union_id || undefined,
-          address: {
-            address1: contract.customer?.address?.address1 || '',
-            postcode: contract.customer?.address?.postcode || '',
-            city: contract.customer?.address?.city || '',
-          },
-        },
+              // IDs
+              reference: fetchedContract.reference || '',
+              customer_id: fetchedContract.customer_id,
+              meeting_id: fetchedContract.meeting_id || undefined,
+              financial_partner_id: fetchedContract.financial_partner_id || undefined,
+              tax_id: fetchedContract.tax_id || undefined,
+              team_id: fetchedContract.team_id || undefined,
+              telepro_id: fetchedContract.telepro_id || undefined,
+              sale_1_id: fetchedContract.sale_1_id || undefined,
+              sale_2_id: fetchedContract.sale_2_id || undefined,
+              manager_id: fetchedContract.manager_id || undefined,
+              assistant_id: fetchedContract.assistant_id || undefined,
+              installer_user_id: fetchedContract.installer_user_id || undefined,
+              opened_at_range_id: fetchedContract.opened_at_range_id || undefined,
+              opc_range_id: fetchedContract.opc_range_id || undefined,
+              state_id: fetchedContract.state_id || undefined,
+              install_state_id: fetchedContract.install_state_id || undefined,
+              admin_status_id: fetchedContract.admin_status_id || undefined,
+              company_id: fetchedContract.company_id || undefined,
 
-        // Products
-        products: contract.products?.map(p => ({
-          product_id: p.product_id,
-          details: p.details,
-        })) || [],
-      });
-    }
-  }, [isOpen, contract]);
+              // Prices
+              total_price_with_taxe: fetchedContract.total_price_with_taxe || undefined,
+              total_price_without_taxe: fetchedContract.total_price_without_taxe || undefined,
+
+              // Other
+              remarks: fetchedContract.remarks || '',
+              variables: fetchedContract.variables || undefined,
+              is_signed: fetchedContract.is_signed || 'NO',
+              status: fetchedContract.status_flag || 'ACTIVE',
+
+              // Customer info
+              customer: {
+                lastname: fetchedContract.customer?.lastname || '',
+                firstname: fetchedContract.customer?.firstname || '',
+                phone: fetchedContract.customer?.phone || '',
+                address: {
+                  address1: fetchedContract.customer?.address?.address1 || '',
+                  postcode: fetchedContract.customer?.address?.postcode || '',
+                  city: fetchedContract.customer?.address?.city || '',
+                },
+              },
+
+              // Products
+              products: fetchedContract.products?.map(p => ({
+                product_id: p.product_id,
+                details: p.details,
+              })) || [],
+            });
+          } else {
+            setError('Impossible de charger les données du contrat');
+          }
+        } catch (err) {
+          setError('Erreur lors du chargement du contrat');
+          console.error('Error loading contract:', err);
+        } finally {
+          setLoadingContract(false);
+        }
+      }
+    };
+
+    loadContract();
+  }, [isOpen, contractId, onFetchContract]);
 
   const toggleSection = useCallback((section: keyof typeof openSections) => {
     setOpenSections(prev => ({
@@ -433,17 +456,39 @@ export default function EditContractModal({ isOpen, onClose, onUpdate, contract 
     color: '#555',
   };
 
+  if (!isOpen) return null;
+
   return (
     <div style={overlayStyle} onClick={onClose}>
       <div style={modalStyle} onClick={(e) => e.stopPropagation()}>
         <div style={headerStyle}>
           <h2 style={titleStyle}>Modifier le Contrat</h2>
-          <p style={subtitleStyle}>Référence: {contract.reference}</p>
+          {contract && <p style={subtitleStyle}>Référence: {contract.reference}</p>}
         </div>
 
         {error && <div style={errorStyle}>{error}</div>}
 
-        <form onSubmit={handleSubmit}>
+        {loadingContract ? (
+          <div style={{ textAlign: 'center', padding: '40px' }}>
+            <div
+              style={{
+                display: 'inline-block',
+                width: '40px',
+                height: '40px',
+                border: '4px solid #f3f3f3',
+                borderTop: '4px solid #667eea',
+                borderRadius: '50%',
+                animation: 'spin 1s linear infinite',
+              }}
+            />
+            <p style={{ marginTop: '16px', color: '#666' }}>Chargement du contrat...</p>
+          </div>
+        ) : !contract ? (
+          <div style={{ textAlign: 'center', padding: '40px', color: '#999' }}>
+            Aucun contrat sélectionné
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit}>
           {/* ==================== DATES SECTION ==================== */}
           <CollapsibleSection
             title="Dates du Contrat"
@@ -607,36 +652,20 @@ export default function EditContractModal({ isOpen, onClose, onUpdate, contract 
               </div>
             </div>
 
-            <div style={rowStyle}>
-              <div style={formGroupStyle}>
-                <label style={labelStyle} htmlFor="customer.phone">
-                  Téléphone <span style={{ color: '#dc3545' }}>*</span>
-                </label>
-                <input
-                  type="tel"
-                  id="customer.phone"
-                  name="customer.phone"
-                  value={formData.customer?.phone || ''}
-                  onChange={handleInputChange}
-                  required
-                  style={inputStyle}
-                  placeholder="0612345678"
-                />
-              </div>
-
-              <div style={formGroupStyle}>
-                <label style={labelStyle} htmlFor="customer.union_id">
-                  Union ID
-                </label>
-                <input
-                  type="number"
-                  id="customer.union_id"
-                  name="customer.union_id"
-                  value={formData.customer?.union_id || ''}
-                  onChange={handleInputChange}
-                  style={inputStyle}
-                />
-              </div>
+            <div style={formGroupStyle}>
+              <label style={labelStyle} htmlFor="customer.phone">
+                Téléphone <span style={{ color: '#dc3545' }}>*</span>
+              </label>
+              <input
+                type="tel"
+                id="customer.phone"
+                name="customer.phone"
+                value={formData.customer?.phone || ''}
+                onChange={handleInputChange}
+                required
+                style={inputStyle}
+                placeholder="0612345678"
+              />
             </div>
 
             <div style={{ ...sectionTitleStyle, fontSize: '14px', marginTop: '16px', marginBottom: '12px', color: '#555' }}>
@@ -1114,6 +1143,19 @@ export default function EditContractModal({ isOpen, onClose, onUpdate, contract 
             </button>
           </div>
         </form>
+        )}
+
+        {/* CSS Styles for spinner animation */}
+        <style jsx>{`
+          @keyframes spin {
+            0% {
+              transform: rotate(0deg);
+            }
+            100% {
+              transform: rotate(360deg);
+            }
+          }
+        `}</style>
       </div>
     </div>
   );
