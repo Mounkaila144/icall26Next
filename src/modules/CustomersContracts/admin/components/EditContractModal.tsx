@@ -203,9 +203,9 @@ export default function EditContractModal({ isOpen, onClose, onUpdate, contractI
                 firstname: fetchedContract.customer?.firstname || '',
                 phone: fetchedContract.customer?.phone || '',
                 address: {
-                  address1: fetchedContract.customer?.address?.address1 || '',
-                  postcode: fetchedContract.customer?.address?.postcode || '',
-                  city: fetchedContract.customer?.address?.city || '',
+                  address1: fetchedContract.customer?.addresses?.[0]?.address1 || '',
+                  postcode: fetchedContract.customer?.addresses?.[0]?.postcode || '',
+                  city: fetchedContract.customer?.addresses?.[0]?.city || '',
                 },
               },
 
