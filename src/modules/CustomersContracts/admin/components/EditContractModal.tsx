@@ -1,10 +1,10 @@
 // ============================================================================
-// CustomersContracts Module - Edit Contract Modal Component with Collapsible Sections
+// CustomersContracts Module - Edit Contract Modal Component with Tabs
 // ============================================================================
 
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import type { CreateContractData, CustomerContract } from '../../types';
 
 interface EditContractModalProps {
@@ -15,69 +15,28 @@ interface EditContractModalProps {
   onFetchContract: (id: number) => Promise<CustomerContract | null>;
 }
 
-// Collapsible Section Component (moved outside to prevent re-renders)
-interface CollapsibleSectionProps {
-  title: string;
+type TabKey = 'dates' | 'customer' | 'team' | 'financial' | 'status' | 'other';
+
+interface Tab {
+  key: TabKey;
+  label: string;
   icon: string;
-  isOpen: boolean;
-  onToggle: () => void;
-  children: React.ReactNode;
-  collapsibleHeaderStyle: React.CSSProperties;
-  collapsibleHeaderHoverStyle: React.CSSProperties;
-  sectionTitleStyle: React.CSSProperties;
 }
-
-const CollapsibleSection = React.memo(({
-  title,
-  icon,
-  isOpen,
-  onToggle,
-  children,
-  collapsibleHeaderStyle,
-  collapsibleHeaderHoverStyle,
-  sectionTitleStyle,
-}: CollapsibleSectionProps) => {
-  const [isHovered, setIsHovered] = useState(false);
-
-  return (
-    <div>
-      <div
-        style={isHovered ? { ...collapsibleHeaderStyle, ...collapsibleHeaderHoverStyle } : collapsibleHeaderStyle}
-        onClick={onToggle}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-      >
-        <div style={sectionTitleStyle}>
-          <span>{icon}</span>
-          <span>{title}</span>
-        </div>
-        <span style={{
-          transition: 'transform 0.3s ease',
-          transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-          display: 'inline-block',
-          color: '#667eea',
-          fontWeight: 'bold',
-        }}>
-          ▼
-        </span>
-      </div>
-      {isOpen && (
-        <div style={{
-          padding: '16px',
-          background: '#fafafa',
-          borderRadius: '8px',
-          marginBottom: '8px'
-        }}>
-          {children}
-        </div>
-      )}
-    </div>
-  );
-});
 
 export default function EditContractModal({ isOpen, onClose, onUpdate, contractId, onFetchContract }: EditContractModalProps) {
   const [contract, setContract] = useState<CustomerContract | null>(null);
   const [loadingContract, setLoadingContract] = useState(false);
+  const [activeTab, setActiveTab] = useState<TabKey>('dates');
+
+  const tabs: Tab[] = [
+    { key: 'dates', label: 'Dates', icon: '📅' },
+    { key: 'customer', label: 'Client', icon: '👤' },
+    { key: 'team', label: 'Équipe', icon: '👥' },
+    { key: 'financial', label: 'Finances', icon: '💰' },
+    { key: 'status', label: 'Statuts', icon: '⚙️' },
+    { key: 'other', label: 'Autres', icon: '📝' },
+  ];
+
   const [formData, setFormData] = useState<CreateContractData>({
     quoted_at: '',
     billing_at: '',
@@ -126,17 +85,6 @@ export default function EditContractModal({ isOpen, onClose, onUpdate, contractI
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Collapsible sections state
-  const [openSections, setOpenSections] = useState({
-    dates: true,
-    customer: true,
-    team: false,
-    financial: false,
-    status: false,
-    products: false,
-    other: false,
-  });
-
   // Load contract data when modal opens
   useEffect(() => {
     const loadContract = async () => {
@@ -150,22 +98,60 @@ export default function EditContractModal({ isOpen, onClose, onUpdate, contractI
           if (fetchedContract) {
             setContract(fetchedContract);
 
+            console.log('====== DEBUG DATE FORMATTING ======');
+            console.log('Full contract data:', fetchedContract);
+            console.log('opc_at RAW value:', fetchedContract.opc_at);
+            console.log('opc_at type:', typeof fetchedContract.opc_at);
+            console.log('quoted_at RAW value:', fetchedContract.quoted_at);
+            console.log('billing_at RAW value:', fetchedContract.billing_at);
+            console.log('opened_at RAW value:', fetchedContract.opened_at);
+
             // Helper to format date from API format to input format
-            const formatDate = (dateString: string | null | undefined) => {
-              if (!dateString) return '';
-              const date = new Date(dateString);
-              return date.toISOString().split('T')[0];
+            const formatDate = (dateString: string | null | undefined, fieldName?: string) => {
+              console.log(`\n--- Formatting ${fieldName || 'date'} ---`);
+              console.log('Input:', dateString);
+
+              if (!dateString) {
+                console.log('Result: empty (no value)');
+                return '';
+              }
+
+              // Extract only the date part (YYYY-MM-DD) to avoid timezone issues
+              // This handles multiple formats: "YYYY-MM-DD", "YYYY-MM-DD HH:MM:SS", ISO strings
+              const dateOnly = dateString.split('T')[0].split(' ')[0];
+              console.log('After split:', dateOnly);
+
+              // Validate it's a proper date format
+              if (/^\d{4}-\d{2}-\d{2}$/.test(dateOnly)) {
+                console.log('Result:', dateOnly, '(validated)');
+                return dateOnly;
+              }
+
+              // Fallback: try to parse and format without timezone conversion
+              try {
+                const parts = dateString.match(/(\d{4})-(\d{2})-(\d{2})/);
+                if (parts) {
+                  const result = `${parts[1]}-${parts[2]}-${parts[3]}`;
+                  console.log('Result:', result, '(regex fallback)');
+                  return result;
+                }
+              } catch (e) {
+                console.error('Error parsing date:', dateString, e);
+              }
+
+              console.log('Result: empty (failed to parse)');
+              return '';
             };
 
-            setFormData({
+            const formattedData = {
               // Dates - use the correct field names from API response
-              quoted_at: formatDate(fetchedContract.quoted_at),
-              billing_at: formatDate(fetchedContract.billing_at),
-              opc_at: formatDate(fetchedContract.opc_at),
-              opened_at: formatDate(fetchedContract.opened_at),
-              sent_at: formatDate(fetchedContract.sent_at),
-              payment_at: formatDate(fetchedContract.payment_at),
-              apf_at: formatDate(fetchedContract.apf_at),
+              quoted_at: formatDate(fetchedContract.quoted_at, 'quoted_at'),
+              billing_at: formatDate(fetchedContract.billing_at, 'billing_at'),
+              opc_at: formatDate(fetchedContract.opc_at, 'opc_at'),
+              opened_at: formatDate(fetchedContract.opened_at, 'opened_at'),
+              sent_at: formatDate(fetchedContract.sent_at, 'sent_at'),
+              payment_at: formatDate(fetchedContract.payment_at, 'payment_at'),
+              apf_at: formatDate(fetchedContract.apf_at, 'apf_at'),
 
               // IDs
               reference: fetchedContract.reference || '',
@@ -214,7 +200,16 @@ export default function EditContractModal({ isOpen, onClose, onUpdate, contractI
                 product_id: p.product_id,
                 details: p.details,
               })) || [],
-            });
+            };
+
+            console.log('\n====== FORMATTED DATA ======');
+            console.log('quoted_at formatted:', formattedData.quoted_at);
+            console.log('billing_at formatted:', formattedData.billing_at);
+            console.log('opc_at formatted:', formattedData.opc_at);
+            console.log('opened_at formatted:', formattedData.opened_at);
+            console.log('===========================\n');
+
+            setFormData(formattedData);
           } else {
             setError('Impossible de charger les données du contrat');
           }
@@ -229,13 +224,6 @@ export default function EditContractModal({ isOpen, onClose, onUpdate, contractI
 
     loadContract();
   }, [isOpen, contractId, onFetchContract]);
-
-  const toggleSection = useCallback((section: keyof typeof openSections) => {
-    setOpenSections(prev => ({
-      ...prev,
-      [section]: !prev[section],
-    }));
-  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
@@ -284,10 +272,27 @@ export default function EditContractModal({ isOpen, onClose, onUpdate, contractI
     setLoading(true);
 
     try {
-      // Clean up undefined values
+      // Clean up undefined values and prepare data
       const cleanData = Object.fromEntries(
         Object.entries(formData).filter(([_, v]) => v !== undefined && v !== '')
       );
+
+      // Convert variables to JSON string if it's an array or object
+      if (cleanData.variables !== undefined) {
+        if (Array.isArray(cleanData.variables) || typeof cleanData.variables === 'object') {
+          cleanData.variables = JSON.stringify(cleanData.variables);
+        }
+      }
+
+      // Remove customer data if customer_id exists (updating existing customer)
+      if (cleanData.customer_id) {
+        delete cleanData.customer;
+      }
+
+      // Remove empty products array
+      if (Array.isArray(cleanData.products) && cleanData.products.length === 0) {
+        delete cleanData.products;
+      }
 
       await onUpdate(contract.id, cleanData as CreateContractData);
       onClose();
@@ -347,31 +352,36 @@ export default function EditContractModal({ isOpen, onClose, onUpdate, contractI
     marginTop: '8px',
   };
 
-  const collapsibleHeaderStyle: React.CSSProperties = {
+  const tabsContainerStyle: React.CSSProperties = {
     display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '12px 16px',
-    background: 'linear-gradient(135deg, #667eea15 0%, #764ba215 100%)',
-    border: '1px solid #667eea40',
-    borderRadius: '8px',
-    cursor: 'pointer',
-    marginTop: '16px',
-    marginBottom: '12px',
-    transition: 'all 0.2s',
-  };
-
-  const collapsibleHeaderHoverStyle: React.CSSProperties = {
-    background: 'linear-gradient(135deg, #667eea25 0%, #764ba225 100%)',
-  };
-
-  const sectionTitleStyle: React.CSSProperties = {
-    fontSize: '16px',
-    fontWeight: '600',
-    color: '#667eea',
-    display: 'flex',
-    alignItems: 'center',
+    borderBottom: '2px solid #f0f0f0',
+    marginBottom: '24px',
     gap: '8px',
+    flexWrap: 'wrap',
+  };
+
+  const tabStyle = (isActive: boolean): React.CSSProperties => ({
+    padding: '12px 20px',
+    cursor: 'pointer',
+    border: 'none',
+    background: isActive ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : 'transparent',
+    color: isActive ? 'white' : '#667eea',
+    fontWeight: '600',
+    fontSize: '14px',
+    borderRadius: '8px 8px 0 0',
+    transition: 'all 0.3s ease',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    position: 'relative',
+    bottom: isActive ? '-2px' : '0',
+  });
+
+  const tabContentStyle: React.CSSProperties = {
+    padding: '20px',
+    background: '#fafafa',
+    borderRadius: '8px',
+    minHeight: '400px',
   };
 
   const formGroupStyle: React.CSSProperties = {
@@ -489,16 +499,36 @@ export default function EditContractModal({ isOpen, onClose, onUpdate, contractI
           </div>
         ) : (
           <form onSubmit={handleSubmit}>
-          {/* ==================== DATES SECTION ==================== */}
-          <CollapsibleSection
-            title="Dates du Contrat"
-            icon="📅"
-            isOpen={openSections.dates}
-            onToggle={() => toggleSection('dates')}
-            collapsibleHeaderStyle={collapsibleHeaderStyle}
-            collapsibleHeaderHoverStyle={collapsibleHeaderHoverStyle}
-            sectionTitleStyle={sectionTitleStyle}
-          >
+            {/* Tabs Navigation */}
+            <div style={tabsContainerStyle}>
+              {tabs.map((tab) => (
+                <button
+                  key={tab.key}
+                  type="button"
+                  onClick={() => setActiveTab(tab.key)}
+                  style={tabStyle(activeTab === tab.key)}
+                  onMouseEnter={(e) => {
+                    if (activeTab !== tab.key) {
+                      e.currentTarget.style.background = 'linear-gradient(135deg, #667eea15 0%, #764ba215 100%)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (activeTab !== tab.key) {
+                      e.currentTarget.style.background = 'transparent';
+                    }
+                  }}
+                >
+                  <span>{tab.icon}</span>
+                  <span>{tab.label}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Tab Content */}
+            <div style={tabContentStyle}>
+              {/* ==================== DATES TAB ==================== */}
+              {activeTab === 'dates' && (
+                <div>
             <div style={rowStyle}>
               <div style={formGroupStyle}>
                 <label style={labelStyle} htmlFor="quoted_at">
@@ -606,18 +636,12 @@ export default function EditContractModal({ isOpen, onClose, onUpdate, contractI
                 />
               </div>
             </div>
-          </CollapsibleSection>
+                </div>
+              )}
 
-          {/* ==================== CUSTOMER SECTION ==================== */}
-          <CollapsibleSection
-            title="Informations Client"
-            icon="👤"
-            isOpen={openSections.customer}
-            onToggle={() => toggleSection('customer')}
-            collapsibleHeaderStyle={collapsibleHeaderStyle}
-            collapsibleHeaderHoverStyle={collapsibleHeaderHoverStyle}
-            sectionTitleStyle={sectionTitleStyle}
-          >
+              {/* ==================== CUSTOMER TAB ==================== */}
+              {activeTab === 'customer' && (
+                <div>
             <div style={rowStyle}>
               <div style={formGroupStyle}>
                 <label style={labelStyle} htmlFor="customer.lastname">
@@ -668,7 +692,16 @@ export default function EditContractModal({ isOpen, onClose, onUpdate, contractI
               />
             </div>
 
-            <div style={{ ...sectionTitleStyle, fontSize: '14px', marginTop: '16px', marginBottom: '12px', color: '#555' }}>
+            <div style={{
+              fontSize: '14px',
+              fontWeight: '600',
+              marginTop: '16px',
+              marginBottom: '12px',
+              color: '#555',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+            }}>
               <span>🏠</span>
               <span>Adresse</span>
             </div>
@@ -722,18 +755,12 @@ export default function EditContractModal({ isOpen, onClose, onUpdate, contractI
                 />
               </div>
             </div>
-          </CollapsibleSection>
+                </div>
+              )}
 
-          {/* ==================== TEAM SECTION ==================== */}
-          <CollapsibleSection
-            title="Équipe & Collaborateurs"
-            icon="👥"
-            isOpen={openSections.team}
-            onToggle={() => toggleSection('team')}
-            collapsibleHeaderStyle={collapsibleHeaderStyle}
-            collapsibleHeaderHoverStyle={collapsibleHeaderHoverStyle}
-            sectionTitleStyle={sectionTitleStyle}
-          >
+              {/* ==================== TEAM TAB ==================== */}
+              {activeTab === 'team' && (
+                <div>
             <div style={row3Style}>
               <div style={formGroupStyle}>
                 <label style={labelStyle} htmlFor="telepro_id">
@@ -851,18 +878,12 @@ export default function EditContractModal({ isOpen, onClose, onUpdate, contractI
                 />
               </div>
             </div>
-          </CollapsibleSection>
+                </div>
+              )}
 
-          {/* ==================== FINANCIAL SECTION ==================== */}
-          <CollapsibleSection
-            title="Informations Financières"
-            icon="💰"
-            isOpen={openSections.financial}
-            onToggle={() => toggleSection('financial')}
-            collapsibleHeaderStyle={collapsibleHeaderStyle}
-            collapsibleHeaderHoverStyle={collapsibleHeaderHoverStyle}
-            sectionTitleStyle={sectionTitleStyle}
-          >
+              {/* ==================== FINANCIAL TAB ==================== */}
+              {activeTab === 'financial' && (
+                <div>
             <div style={row3Style}>
               <div style={formGroupStyle}>
                 <label style={labelStyle} htmlFor="financial_partner_id">
@@ -924,18 +945,12 @@ export default function EditContractModal({ isOpen, onClose, onUpdate, contractI
                 style={inputStyle}
               />
             </div>
-          </CollapsibleSection>
+                </div>
+              )}
 
-          {/* ==================== STATUS SECTION ==================== */}
-          <CollapsibleSection
-            title="Statuts & Configuration"
-            icon="⚙️"
-            isOpen={openSections.status}
-            onToggle={() => toggleSection('status')}
-            collapsibleHeaderStyle={collapsibleHeaderStyle}
-            collapsibleHeaderHoverStyle={collapsibleHeaderHoverStyle}
-            sectionTitleStyle={sectionTitleStyle}
-          >
+              {/* ==================== STATUS TAB ==================== */}
+              {activeTab === 'status' && (
+                <div>
             <div style={row3Style}>
               <div style={formGroupStyle}>
                 <label style={labelStyle} htmlFor="state_id">
@@ -1057,18 +1072,12 @@ export default function EditContractModal({ isOpen, onClose, onUpdate, contractI
                 </select>
               </div>
             </div>
-          </CollapsibleSection>
+                </div>
+              )}
 
-          {/* ==================== OTHER SECTION ==================== */}
-          <CollapsibleSection
-            title="Autres Informations"
-            icon="📝"
-            isOpen={openSections.other}
-            onToggle={() => toggleSection('other')}
-            collapsibleHeaderStyle={collapsibleHeaderStyle}
-            collapsibleHeaderHoverStyle={collapsibleHeaderHoverStyle}
-            sectionTitleStyle={sectionTitleStyle}
-          >
+              {/* ==================== OTHER TAB ==================== */}
+              {activeTab === 'other' && (
+                <div>
             <div style={formGroupStyle}>
               <label style={labelStyle} htmlFor="reference">
                 Référence
@@ -1112,9 +1121,11 @@ export default function EditContractModal({ isOpen, onClose, onUpdate, contractI
                 disabled
               />
             </div>
-          </CollapsibleSection>
+                </div>
+              )}
+            </div>
 
-          {/* Form Actions */}
+            {/* Form Actions */}
           <div style={buttonsStyle}>
             <button
               type="button"
