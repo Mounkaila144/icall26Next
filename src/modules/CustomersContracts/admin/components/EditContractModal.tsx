@@ -5,12 +5,12 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import type { CreateContractData, CustomerContract } from '../../types';
+import type { UpdateContractData, CustomerContract } from '../../types';
 
 interface EditContractModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onUpdate: (id: number, data: CreateContractData) => Promise<void>;
+  onUpdate: (id: number, data: UpdateContractData) => Promise<void>;
   contractId: number | null;
   onFetchContract: (id: number) => Promise<CustomerContract | null>;
 }
@@ -29,7 +29,7 @@ export default function EditContractModal({ isOpen, onClose, onUpdate, contractI
   const [activeTab, setActiveTab] = useState<TabKey>('dates');
 
   const tabs: Tab[] = [
-    { key: 'dates', label: 'Dates', icon: '📅' },
+    { key: 'contract', label: 'Contract', icon: '📅' },
     { key: 'customer', label: 'Client', icon: '👤' },
     { key: 'team', label: 'Équipe', icon: '👥' },
     { key: 'financial', label: 'Finances', icon: '💰' },
@@ -37,7 +37,7 @@ export default function EditContractModal({ isOpen, onClose, onUpdate, contractI
     { key: 'other', label: 'Autres', icon: '📝' },
   ];
 
-  const [formData, setFormData] = useState<CreateContractData>({
+  const [formData, setFormData] = useState<UpdateContractData>({
     quoted_at: '',
     billing_at: '',
     opc_at: '',
@@ -272,29 +272,23 @@ export default function EditContractModal({ isOpen, onClose, onUpdate, contractI
     setLoading(true);
 
     try {
-      // Clean up undefined values and prepare data
-      const cleanData = Object.fromEntries(
-        Object.entries(formData).filter(([_, v]) => v !== undefined && v !== '')
-      );
+      // Prepare data for update - keep all form data including customer info
+      const updateData = { ...formData };
 
       // Convert variables to JSON string if it's an array or object
-      if (cleanData.variables !== undefined) {
-        if (Array.isArray(cleanData.variables) || typeof cleanData.variables === 'object') {
-          cleanData.variables = JSON.stringify(cleanData.variables);
+      if (updateData.variables !== undefined) {
+        if (Array.isArray(updateData.variables) || typeof updateData.variables === 'object') {
+          updateData.variables = JSON.stringify(updateData.variables);
         }
       }
 
-      // Remove customer data if customer_id exists (updating existing customer)
-      if (cleanData.customer_id) {
-        delete cleanData.customer;
-      }
+      // Clean up undefined values and empty strings (same as CreateContractModal)
+      // This will remove empty string fields but preserve objects like customer and products
+      const cleanData = Object.fromEntries(
+        Object.entries(updateData).filter(([_, v]) => v !== undefined && v !== '')
+      );
 
-      // Remove empty products array
-      if (Array.isArray(cleanData.products) && cleanData.products.length === 0) {
-        delete cleanData.products;
-      }
-
-      await onUpdate(contract.id, cleanData as CreateContractData);
+      await onUpdate(contract.id, cleanData as UpdateContractData);
       onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update contract');
@@ -305,7 +299,7 @@ export default function EditContractModal({ isOpen, onClose, onUpdate, contractI
 
   if (!isOpen || !contract) return null;
 
-  // Styles (same as CreateContractModal)
+  // Modal Styles
   const overlayStyle: React.CSSProperties = {
     position: 'fixed',
     top: 0,
@@ -527,7 +521,7 @@ export default function EditContractModal({ isOpen, onClose, onUpdate, contractI
             {/* Tab Content */}
             <div style={tabContentStyle}>
               {/* ==================== DATES TAB ==================== */}
-              {activeTab === 'dates' && (
+              {activeTab === 'contract' && (
                 <div>
             <div style={rowStyle}>
               <div style={formGroupStyle}>

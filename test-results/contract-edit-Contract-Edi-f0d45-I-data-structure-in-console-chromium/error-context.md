@@ -1,0 +1,53 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - complementary [ref=e3]:
+      - generic [ref=e4]:
+        - generic [ref=e5]: Erreur de navigation
+        - text: Impossible de charger la navigation
+    - generic [ref=e6]:
+      - navigation [ref=e7]:
+        - generic:
+          - heading [level=1]
+        - generic [ref=e8]:
+          - button "🇬🇧 EN" [ref=e10] [cursor=pointer]:
+            - generic [ref=e11]: 🇬🇧
+            - generic [ref=e12]: EN
+            - img [ref=e13]
+          - button "U User user@example.com" [ref=e16] [cursor=pointer]:
+            - generic [ref=e17]: U
+            - generic [ref=e18]:
+              - generic [ref=e19]: User
+              - generic [ref=e20]: user@example.com
+            - img [ref=e21]
+      - main [ref=e23]:
+        - generic [ref=e25]:
+          - generic [ref=e26]:
+            - generic [ref=e27]:
+              - heading "Contracts Management" [level=1] [ref=e28]
+              - paragraph [ref=e29]: Manage and track all customer contracts
+            - button "+ Nouveau Contrat" [ref=e30] [cursor=pointer]:
+              - generic [ref=e31]: +
+              - generic [ref=e32]: Nouveau Contrat
+          - generic [ref=e33]:
+            - generic [ref=e34]: ❌ Request failed with status code 404
+            - generic [ref=e35]:
+              - generic [ref=e36]: 📋
+              - paragraph [ref=e37]: No contracts found
+  - generic:
+    - generic [ref=e40] [cursor=pointer]:
+      - img [ref=e41]
+      - generic [ref=e43]: 3 errors
+      - button "Hide Errors" [ref=e44]:
+        - img [ref=e45]
+    - status [ref=e48]:
+      - generic [ref=e49]:
+        - img [ref=e51]
+        - generic [ref=e53]:
+          - text: Static route
+          - button "Hide static indicator" [ref=e54] [cursor=pointer]:
+            - img [ref=e55]
+  - alert [ref=e58]
+```

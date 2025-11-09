@@ -4,7 +4,9 @@
       "Bash(mkdir:*)",
       "Read(//c/laragon/www/backend-api/Modules/**)",
       "Bash(tree:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(npm run lint)",
+      "Bash(findstr:*)"
     ],
     "deny": [],
     "ask": []
