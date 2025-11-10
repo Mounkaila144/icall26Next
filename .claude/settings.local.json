@@ -1,13 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(mkdir:*)",
-      "Read(//c/laragon/www/backend-api/Modules/**)",
-      "write(//c/laragon/www/backend-api/Modules/**)",
-      "Bash(tree:*)",
-      "Bash(npm run lint)",
-      "Bash(findstr:*)"
+      "WebSearch"
     ],
+
     "deny": [],
     "ask": []
   }
