@@ -2,6 +2,52 @@ import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'ax
 import { ApiError } from '../types/api.types';
 
 /**
+ * Détecter si on est dans un contexte superadmin
+ */
+const isSuperadminContext = (): boolean => {
+    if (typeof window === 'undefined') return false;
+    return window.location.pathname.startsWith('/superadmin');
+};
+
+/**
+ * Récupérer le token d'authentification selon le contexte
+ */
+const getAuthToken = (): string | null => {
+    if (typeof window === 'undefined') return null;
+
+    // Si on est dans le contexte superadmin, chercher le token superadmin
+    if (isSuperadminContext()) {
+        return localStorage.getItem('superadmin_auth_token');
+    }
+
+    // Sinon, chercher le token admin
+    return localStorage.getItem('auth_token');
+};
+
+/**
+ * Nettoyer les tokens selon le contexte
+ */
+const clearAuthData = (): void => {
+    if (typeof window === 'undefined') return;
+
+    if (isSuperadminContext()) {
+        localStorage.removeItem('superadmin_auth_token');
+        localStorage.removeItem('superadmin_user');
+    } else {
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('user');
+        localStorage.removeItem('tenant');
+    }
+};
+
+/**
+ * Obtenir l'URL de login selon le contexte
+ */
+const getLoginUrl = (): string => {
+    return isSuperadminContext() ? '/superadmin/login' : '/admin/login';
+};
+
+/**
  * Create an API client instance
  * L'API est sur le même domaine, pas besoin de X-Tenant-ID !
  * Le domaine est automatiquement détecté par Laravel
@@ -20,7 +66,7 @@ export const createApiClient = (tenantId?: string): AxiosInstance => {
     // Request interceptor to add auth token
     client.interceptors.request.use(
         (config: InternalAxiosRequestConfig) => {
-            const token = localStorage.getItem('auth_token');
+            const token = getAuthToken();
             if (token && config.headers) {
                 config.headers.Authorization = `Bearer ${token}`;
             }
@@ -36,10 +82,9 @@ export const createApiClient = (tenantId?: string): AxiosInstance => {
         (response) => response,
         (error: AxiosError<ApiError>) => {
             if (error.response?.status === 401) {
-                localStorage.removeItem('auth_token');
-                localStorage.removeItem('user');
+                clearAuthData();
                 if (typeof window !== 'undefined') {
-                    window.location.href = '/admin/login';
+                    window.location.href = getLoginUrl();
                 }
             }
             return Promise.reject(error);

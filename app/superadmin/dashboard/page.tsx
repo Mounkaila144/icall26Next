@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useAuth } from '@/src/modules/UsersGuard/superadmin/hooks/useAuth';
 
 export default function SuperadminDashboardPage() {
@@ -69,7 +70,7 @@ export default function SuperadminDashboardPage() {
 
           {/* Quick Actions */}
           <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            <div className="bg-white overflow-hidden shadow-lg rounded-xl hover:shadow-2xl transition-shadow duration-300">
+            <Link href="/superadmin/sites" className="bg-white overflow-hidden shadow-lg rounded-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 cursor-pointer">
               <div className="p-6">
                 <div className="flex items-center">
                   <div className="flex-shrink-0 bg-indigo-100 rounded-lg p-3">
@@ -78,12 +79,12 @@ export default function SuperadminDashboardPage() {
                     </svg>
                   </div>
                   <div className="ml-5">
-                    <h3 className="text-lg font-medium text-gray-900">Gestion des tenants</h3>
-                    <p className="mt-1 text-sm text-gray-500">Gérer les clients et leurs tenants</p>
+                    <h3 className="text-lg font-medium text-gray-900">Gestion des sites</h3>
+                    <p className="mt-1 text-sm text-gray-500">Gérer les sites et leurs configurations</p>
                   </div>
                 </div>
               </div>
-            </div>
+            </Link>
 
             <div className="bg-white overflow-hidden shadow-lg rounded-xl hover:shadow-2xl transition-shadow duration-300">
               <div className="p-6">
