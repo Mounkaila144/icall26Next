@@ -4,6 +4,7 @@ import { ReactNode, useEffect, useState } from 'react';
 import { TenantProvider } from '@/src/shared/lib/tenant-context';
 import { LanguageProvider } from '@/src/shared/lib/language-context';
 import { SidebarProvider, useSidebar } from '@/src/shared/lib/sidebar-context';
+import { PermissionsProvider } from '@/src/shared/contexts/PermissionsContext';
 import { Sidebar } from '@/src/modules/Dashboard';
 import { Navbar } from '@/src/shared/components/Navbar';
 import { initializeModules } from '@/src/shared/lib/init-modules';
@@ -193,15 +194,17 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 
   return (
     <TenantProvider>
-      <LanguageProvider>
-        <SidebarProvider>
-          {isLoginPage ? (
-            children
-          ) : (
-            <AdminLayoutContent>{children}</AdminLayoutContent>
-          )}
-        </SidebarProvider>
-      </LanguageProvider>
+      <PermissionsProvider>
+        <LanguageProvider>
+          <SidebarProvider>
+            {isLoginPage ? (
+              children
+            ) : (
+              <AdminLayoutContent>{children}</AdminLayoutContent>
+            )}
+          </SidebarProvider>
+        </LanguageProvider>
+      </PermissionsProvider>
     </TenantProvider>
   );
 }

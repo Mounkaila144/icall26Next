@@ -10,6 +10,7 @@ import { useSidebar } from '@/src/shared/lib/sidebar-context';
 import CreateContractModal from './CreateContractModal';
 import EditContractModal from './EditContractModal';
 import type { CustomerContract } from '../../types';
+import {Can} from "@/shared/components/permissions";
 
 /**
  * StatusBadge Component - Display status with color and icon
@@ -692,6 +693,9 @@ export default function ContractsList1() {
               </form>
             )}
 
+              <Can credential={[['admin', 'superadmin', 'settings_user_listz']]}>
+                  <h1>Edit User</h1>
+              </Can>
             <div style={tableContainerStyle} className="custom-scroll">
               <table style={tableStyle}>
                 <thead>

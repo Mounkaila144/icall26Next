@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation';
 import { adminAuthService } from '../services/authService';
 import { AuthState, LoginCredentials } from '../../types/auth.types';
 import { AxiosError } from 'axios';
+import { usePermissionsOptional } from '@/src/shared/contexts/PermissionsContext';
+import { extractPermissionsFromLogin } from '@/src/shared/lib/permissions/extractPermissions';
 
 interface UseAuthReturn extends AuthState {
     login: (credentials: LoginCredentials) => Promise<void>;
@@ -16,6 +18,7 @@ interface UseAuthReturn extends AuthState {
 
 export const useAuth = (): UseAuthReturn => {
     const router = useRouter();
+    const permissionsContext = usePermissionsOptional();
 
     const [state, setState] = useState<AuthState>({
         user: null,
@@ -65,6 +68,21 @@ export const useAuth = (): UseAuthReturn => {
                     isLoading: false,
                 });
 
+                // Extract and store permissions (NO additional API request!)
+                if (permissionsContext) {
+                    const permissions = extractPermissionsFromLogin(response);
+                    permissionsContext.setPermissions(permissions);
+
+                    console.log('[useAuth] Permissions extracted:', {
+                        total_permissions: permissions.permissions.length,
+                        groups: permissions.groups,
+                        is_admin: permissions.is_admin,
+                        is_superadmin: permissions.is_superadmin,
+                    });
+                } else {
+                    console.warn('[useAuth] PermissionsContext not available, skipping permissions extraction');
+                }
+
                 router.push('/admin/customers-contracts/contracts-list1');
             } else {
                 throw new Error(response.message || 'Login failed');
@@ -83,7 +101,7 @@ export const useAuth = (): UseAuthReturn => {
             setState(prev => ({ ...prev, isLoading: false }));
             throw err;
         }
-    }, [router]);
+    }, [router, permissionsContext]);
 
     const logout = useCallback(async () => {
         setError(null);
@@ -93,6 +111,11 @@ export const useAuth = (): UseAuthReturn => {
         } catch (err) {
             console.error('Logout error:', err);
         } finally {
+            // Clear permissions
+            if (permissionsContext) {
+                permissionsContext.clearPermissions();
+            }
+
             setState({
                 user: null,
                 token: null,
@@ -103,7 +126,7 @@ export const useAuth = (): UseAuthReturn => {
 
             router.push('/admin/login');
         }
-    }, [router]);
+    }, [router, permissionsContext]);
 
     const refreshUser = useCallback(async () => {
         if (!state.isAuthenticated) return;
