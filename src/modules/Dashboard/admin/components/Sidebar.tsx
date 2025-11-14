@@ -4,9 +4,9 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { useMenus } from '../hooks/useMenus';
+import { useConfigMenus } from '@/src/shared/hooks/useConfigMenus';
 import { useSidebar } from '@/src/shared/lib/sidebar-context';
-import type { MenuItem } from '../../types';
+import type { MenuConfig } from '@/src/shared/types/menu-config.types';
 
 const FALLBACK_ICONS: React.ReactElement[] = [
   (
@@ -84,7 +84,7 @@ const hashString = (value: string): number => {
  */
 export const Sidebar: React.FC = () => {
   const pathname = usePathname();
-  const { menus, isLoading, error } = useMenus();
+  const { menus, isLoading } = useConfigMenus({ visibleOnly: true });
   const { isCollapsed, toggleSidebar } = useSidebar();
   const [expandedMenus, setExpandedMenus] = useState<Set<string>>(new Set());
   const [hoveredMenu, setHoveredMenu] = useState<string | null>(null);
@@ -101,8 +101,8 @@ export const Sidebar: React.FC = () => {
 
   // Track state changes
   React.useEffect(() => {
-    console.log('📊 [Sidebar] State:', { isLoading, hasError: !!error, menusCount: menus?.length });
-  }, [isLoading, error, menus?.length]);
+    console.log('📊 [Sidebar] State:', { isLoading, menusCount: menus?.length });
+  }, [isLoading, menus?.length]);
 
   // Ouvrir automatiquement le deuxième menu (index 1) par défaut - Run only once when menus are loaded
   React.useEffect(() => {
@@ -125,8 +125,8 @@ export const Sidebar: React.FC = () => {
     navShadow: '0 4px 20px rgba(0, 0, 0, 0.06), 0 0 1px rgba(0, 0, 0, 0.05)',
   }), []);
 
-  const getFallbackIcon = React.useCallback((menu: MenuItem): React.ReactElement => {
-    const seed = `${menu.id}|${menu.path ?? ''}|${menu.label}|${menu.icon?.value ?? ''}`;
+  const getFallbackIcon = React.useCallback((menu: MenuConfig): React.ReactElement => {
+    const seed = `${menu.id}|${menu.route ?? ''}|${menu.label}|${menu.icon?.value ?? ''}`;
     const index = hashString(seed) % FALLBACK_ICONS.length;
     const template = FALLBACK_ICONS[index];
     return React.cloneElement(template, { key: `${menu.id}-${index}` });
@@ -144,8 +144,8 @@ export const Sidebar: React.FC = () => {
     });
   }, []);
 
-  const isActive = (menu: MenuItem): boolean => {
-    if (menu.path === pathname) {
+  const isActive = (menu: MenuConfig): boolean => {
+    if (menu.route === pathname) {
       return true;
     }
     if (menu.children) {
@@ -158,33 +158,20 @@ export const Sidebar: React.FC = () => {
   const menusToRender = React.useMemo(() => {
     if (menus.length === 0) return [];
 
-    // Si le premier menu est un conteneur avec des enfants, afficher ses enfants directement
-    // Sinon, afficher tous les menus sauf le premier
-    if (menus.length === 1 && menus[0].children && menus[0].children.length > 0) {
-      // Un seul menu racine avec enfants : afficher les enfants
-      return isCollapsed
-        ? menus[0].children.flatMap((menu) => {
-            if (menu.children && menu.children.length > 0) {
-              return [menu, ...menu.children.filter(child => child.is_visible && child.is_active)];
-            }
-            return [menu];
-          })
-        : menus[0].children;
-    } else {
-      // Comportement normal : skip le premier menu
-      return isCollapsed
-        ? menus.slice(1).flatMap((menu) => {
-            if (menu.children && menu.children.length > 0) {
-              return [menu, ...menu.children.filter(child => child.is_visible && child.is_active)];
-            }
-            return [menu];
-          })
-        : menus.slice(1);
-    }
+    // Display all menus from configuration (already filtered by visibleOnly)
+    return isCollapsed
+      ? menus.flatMap((menu) => {
+          if (menu.children && menu.children.length > 0) {
+            return [menu, ...menu.children];
+          }
+          return [menu];
+        })
+      : menus;
   }, [menus, isCollapsed]);
 
-  const renderMenuItem = (menu: MenuItem, level: number = 0): React.ReactNode => {
-    if (!menu.is_visible || !menu.is_active) {
+  const renderMenuItem = (menu: MenuConfig, level: number = 0): React.ReactNode => {
+    // Menus are already filtered by visibleOnly in useConfigMenus
+    if (menu.isVisible === false || menu.isActive === false) {
       return null;
     }
 
@@ -243,7 +230,7 @@ export const Sidebar: React.FC = () => {
         color: active ? '#ffffff' : palette.textPrimary,
         border: active ? '1px solid rgba(37, 99, 235, 0.3)' : `1px solid transparent`,
         borderRadius: level === 0 ? '8px' : '6px',
-        cursor: hasChildren || menu.path ? 'pointer' : 'default',
+        cursor: hasChildren || menu.route ? 'pointer' : 'default',
         fontSize: level === 0 ? '13px' : '12px',
         fontWeight: active ? '600' : '500',
         textDecoration: 'none',
@@ -395,9 +382,9 @@ export const Sidebar: React.FC = () => {
       );
     }
 
-    if (menu.path) {
+    if (menu.route) {
       return wrapper(
-        <Link href={menu.path} style={styles.button}>
+        <Link href={menu.route} style={styles.button}>
           {content}
         </Link>,
       );
@@ -432,25 +419,6 @@ export const Sidebar: React.FC = () => {
             }}
           />
         ))}
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div
-        style={{
-          margin: '20px',
-          padding: '20px',
-          borderRadius: '12px',
-          background: 'rgba(248, 113, 113, 0.05)',
-          border: '1px solid rgba(248, 113, 113, 0.2)',
-          color: '#dc2626',
-          fontSize: '14px',
-        }}
-      >
-        <div style={{ fontWeight: 600, marginBottom: '6px' }}>Erreur de navigation</div>
-        <small style={{ color: '#64748b' }}>Impossible de charger la navigation</small>
       </div>
     );
   }
