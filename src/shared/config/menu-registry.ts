@@ -9,7 +9,9 @@ import { MenuConfig, ModuleMenuConfig } from '@/src/shared/types/menu-config.typ
 
 // Import menu configurations from modules
 import { dashboardMenuConfig } from '@/src/modules/Dashboard/menu.config';
-import { usersGuardMenuConfig } from '@/src/modules/UsersGuard/menu.config';
+import { usersGuardMenuConfig } from '@/modules/Users/menu.config';
+import { customersMenuConfig } from '@/src/modules/Customers/menu.config';
+import { CustomersContractsMenuConfig } from '@/src/modules/CustomersContracts/menu.config';
 
 /**
  * Registry of all module menu configurations
@@ -22,6 +24,8 @@ import { usersGuardMenuConfig } from '@/src/modules/UsersGuard/menu.config';
 const moduleMenuConfigs: ModuleMenuConfig[] = [
   dashboardMenuConfig,
   usersGuardMenuConfig,
+  customersMenuConfig,
+  CustomersContractsMenuConfig,
   // Add more module menu configs here
 ];
 

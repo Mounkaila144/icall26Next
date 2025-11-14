@@ -1,46 +1,25 @@
-import { ModuleMenuConfig } from '@/src/shared/types/menu-config.types';
+import { ModuleMenuConfig } from '@/shared/types/menu-config.types';
 
 /**
- * UsersGuard Module Menu Configuration
+ * Users Module Menu Configuration
  *
- * This file defines all menu items for the UsersGuard (Authentication) module.
+ * This file defines all menu items for the Users (Authentication) module.
  */
 export const usersGuardMenuConfig: ModuleMenuConfig = {
-  module: 'UsersGuard',
+  module: 'Users',
   menus: [
     {
       id: 'users',
       label: 'Users',
+        route: '/admin/users',
       icon: {
         type: 'emoji',
         value: '👥',
       },
       order: 10,
-      module: 'UsersGuard',
+      module: 'Users',
       isVisible: true,
       isActive: true,
-      children: [
-        {
-          id: 'users-list',
-          label: 'User Management',
-          route: '/admin/users',
-          order: 1,
-          module: 'UsersGuard',
-          parentId: 'users',
-          isVisible: true,
-          isActive: true,
-        },
-        {
-          id: 'users-roles',
-          label: 'Roles & Permissions',
-          route: '/admin/users/roles',
-          order: 2,
-          module: 'UsersGuard',
-          parentId: 'users',
-          isVisible: true,
-          isActive: true,
-        },
-      ],
     },
     {
       id: 'settings',
@@ -50,7 +29,7 @@ export const usersGuardMenuConfig: ModuleMenuConfig = {
         value: '⚙️',
       },
       order: 100,
-      module: 'UsersGuard',
+      module: 'Users',
       isVisible: true,
       isActive: true,
       children: [
@@ -59,7 +38,7 @@ export const usersGuardMenuConfig: ModuleMenuConfig = {
           label: 'Authentication',
           route: '/admin/settings/auth',
           order: 1,
-          module: 'UsersGuard',
+          module: 'Users',
           parentId: 'settings',
           isVisible: true,
           isActive: true,
@@ -69,7 +48,7 @@ export const usersGuardMenuConfig: ModuleMenuConfig = {
           label: 'Password Policy',
           route: '/admin/settings/password-policy',
           order: 2,
-          module: 'UsersGuard',
+          module: 'Users',
           parentId: 'settings',
           isVisible: true,
           isActive: true,
@@ -79,7 +58,7 @@ export const usersGuardMenuConfig: ModuleMenuConfig = {
           label: 'Sessions',
           route: '/admin/settings/sessions',
           order: 3,
-          module: 'UsersGuard',
+          module: 'Users',
           parentId: 'settings',
           isVisible: true,
           isActive: true,

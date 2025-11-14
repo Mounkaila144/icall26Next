@@ -22,18 +22,6 @@ export const dashboardMenuConfig: ModuleMenuConfig = {
       isVisible: true,
       isActive: true,
     },
-    {
-      id: 'analytics',
-      label: 'Analytics',
-      route: '/admin/analytics',
-      icon: {
-        type: 'emoji',
-        value: '📈',
-      },
-      order: 2,
-      module: 'Dashboard',
-      isVisible: true,
-      isActive: true,
-    },
+
   ],
 };
