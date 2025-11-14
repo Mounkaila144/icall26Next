@@ -110,7 +110,6 @@ export const Sidebar: React.FC = () => {
       console.log('🔽 [Sidebar] Auto-expanding second menu:', menus[1].label);
       setExpandedMenus(new Set([menus[1].id]));
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [menus.length]); // Only depend on menus.length, not the entire menus array
 
   const palette = React.useMemo(() => ({

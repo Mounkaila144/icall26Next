@@ -183,7 +183,6 @@ export const useMenus = () => {
     return () => {
       console.log(`🔴 [useMenus] UNMOUNTED - ID: ${mountId}`);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Empty dependency array - fetch only on mount
 
   return {

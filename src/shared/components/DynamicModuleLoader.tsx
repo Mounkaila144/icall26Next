@@ -63,7 +63,6 @@ export function DynamicModuleLoader({ slug }: DynamicModuleLoaderProps) {
         }
 
         loadComponent();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [slug.join('/')]);
 
     if (isLoading) {

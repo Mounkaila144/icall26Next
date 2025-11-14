@@ -96,7 +96,7 @@ export function useTranslation(moduleName?: string): UseTranslationReturn {
     const cacheKey = `${moduleName || 'global'}_${locale}`;
 
     // Try to get from cache first
-    let translations = translationCache[cacheKey];
+    const translations = translationCache[cacheKey];
 
     if (!translations) {
       // Translations not loaded yet, return default English text
