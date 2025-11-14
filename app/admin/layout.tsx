@@ -3,6 +3,7 @@
 import { ReactNode, useEffect, useState } from 'react';
 import { TenantProvider } from '@/src/shared/lib/tenant-context';
 import { LanguageProvider } from '@/src/shared/lib/language-context';
+import { TranslationProvider } from '@/src/shared/i18n';
 import { SidebarProvider, useSidebar } from '@/src/shared/lib/sidebar-context';
 import { PermissionsProvider } from '@/src/shared/contexts/PermissionsContext';
 import { Sidebar } from '@/src/modules/Dashboard';
@@ -196,13 +197,15 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     <TenantProvider>
       <PermissionsProvider>
         <LanguageProvider>
-          <SidebarProvider>
-            {isLoginPage ? (
-              children
-            ) : (
-              <AdminLayoutContent>{children}</AdminLayoutContent>
-            )}
-          </SidebarProvider>
+          <TranslationProvider>
+            <SidebarProvider>
+              {isLoginPage ? (
+                children
+              ) : (
+                <AdminLayoutContent>{children}</AdminLayoutContent>
+              )}
+            </SidebarProvider>
+          </TranslationProvider>
         </LanguageProvider>
       </PermissionsProvider>
     </TenantProvider>

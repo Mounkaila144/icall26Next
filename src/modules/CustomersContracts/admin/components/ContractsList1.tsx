@@ -7,6 +7,7 @@
 import React, { useState } from 'react';
 import { useContracts } from '../hooks/useContracts';
 import { useSidebar } from '@/src/shared/lib/sidebar-context';
+import { useTranslation } from '@/src/shared/i18n';
 import CreateContractModal from './CreateContractModal';
 import EditContractModal from './EditContractModal';
 import type { CustomerContract } from '../../types';
@@ -243,6 +244,7 @@ export default function ContractsList1() {
   } = useContracts();
 
   const { isCollapsed } = useSidebar();
+  const { t } = useTranslation('CustomersContracts');
   const [searchTerm, setSearchTerm] = useState('');
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -694,7 +696,7 @@ export default function ContractsList1() {
             )}
 
               <Can credential={[['admin', 'superadmin', 'settings_user_listz']]}>
-                  <h1>Edit User</h1>
+                  <h1>{t('Edit User')}</h1>
               </Can>
             <div style={tableContainerStyle} className="custom-scroll">
               <table style={tableStyle}>

@@ -69,6 +69,7 @@ src/modules/{ModuleName}/
 **API Client** (`src/shared/lib/api-client.ts`):
 - When `tenantId` is provided, adds `X-Tenant-ID` header to all requests
 - Automatically injects `Authorization: Bearer` token from localStorage
+- Automatically adds `Accept-Language` header with current locale (fr, en, ar)
 - Handles 401 errors by clearing auth state and redirecting to login
 - Base URL from `NEXT_PUBLIC_API_URL` environment variable
 
@@ -116,6 +117,196 @@ mkdir src/modules/{ModuleName}/types
 - Export public API through `index.ts` barrel file
 - Implement loading and error states in hooks
 - Use try-catch blocks in service methods
+- Create module-specific translations in `translations/` directory
+
+## Internationalization (i18n)
+
+### Translation System Architecture
+
+The application uses a **modular translation system** with **English as the default language** and automatic fallback.
+
+**Philosophy:**
+- All text in code is written in **English**
+- Translations are **only created for other languages** (French, Arabic)
+- **No English translation files needed** - English text in code IS the translation
+- Automatic fallback to English text if translation not found
+
+**Directory Structure:**
+```
+src/shared/i18n/
+├── translations/          # Global translations (non-English only)
+│   ├── fr.json           # French
+│   └── ar.json           # Arabic
+├── translation-provider.tsx
+├── use-translation.ts
+└── types.ts
+
+src/modules/{ModuleName}/translations/  # Module translations (non-English only)
+├── fr.json
+└── ar.json
+```
+
+### Translation Fallback Priority
+
+1. **English Check**: If locale is 'en', return English text immediately (no file lookup)
+2. **Module Translation**: `src/modules/{ModuleName}/translations/{locale}.json`
+3. **Global Translation**: `src/shared/i18n/translations/{locale}.json`
+4. **English Fallback**: Return the original English text if not found
+
+### Integration with LanguageProvider
+
+The translation system integrates with the existing `LanguageProvider` (`src/shared/lib/language-context.tsx`):
+- `LanguageProvider` manages the current language state
+- `TranslationProvider` wraps the translation logic
+- Both must be used together in the app layout
+
+### Usage Examples
+
+#### 1. Global Translations (English text as default)
+```typescript
+'use client';
+import { useTranslation } from '@/src/shared/i18n';
+
+export function SaveButton() {
+  const { t } = useTranslation();
+
+  return <button>{t('Save')}</button>;
+  // EN: "Save" | FR: "Enregistrer" | AR: "حفظ"
+}
+```
+
+#### 2. Module-Specific Translations with Fallback
+```typescript
+'use client';
+import { useTranslation } from '@/src/shared/i18n';
+
+export function LoginForm() {
+  const { t } = useTranslation('UsersGuard');
+
+  return (
+    <div>
+      <h1>{t('Login')}</h1>           {/* Module: "Connexion" (FR) */}
+      <button>{t('Cancel')}</button>  {/* Fallback to global: "Annuler" (FR) */}
+    </div>
+  );
+}
+```
+
+#### 3. Translations with Parameters
+```typescript
+const { t } = useTranslation();
+
+// English text with parameters
+t('Welcome, {name}!', { name: 'Marie' });
+// EN: "Welcome, Marie!" | FR: "Bienvenue, Marie!"
+```
+
+#### 4. Language Switcher
+```typescript
+import { LanguageSwitcher } from '@/src/shared/components';
+
+export function Header() {
+  return (
+    <header>
+      <LanguageSwitcher />
+    </header>
+  );
+}
+```
+
+### Creating Module Translations
+
+#### Step 1: Write Your Code in English
+
+```typescript
+'use client';
+import { useTranslation } from '@/src/shared/i18n';
+
+export function ProductForm() {
+  const { t } = useTranslation('Products');
+
+  return (
+    <div>
+      <h1>{t('Create Product')}</h1>
+      <button>{t('Save')}</button>
+      <button>{t('Cancel')}</button>
+    </div>
+  );
+}
+```
+
+#### Step 2: Create Translation Files (Non-English Only)
+
+```bash
+# Create translation directory
+mkdir src/modules/Products/translations
+
+# Create translation files (NO en.json needed!)
+touch src/modules/Products/translations/{fr,ar}.json
+```
+
+**Example** (`src/modules/Products/translations/fr.json`):
+```json
+{
+  "Create Product": "Créer un produit",
+  "Product created successfully": "Produit créé avec succès",
+  "Product updated": "Produit mis à jour",
+  "Product deleted": "Produit supprimé"
+}
+```
+
+**Note:** The English text in your code (`'Create Product'`) is used as the key to look up translations. No `en.json` file needed!
+
+### Translation Best Practices
+
+**Global Translations (shared/i18n/translations/):**
+- Common UI labels: save, cancel, delete, edit
+- Navigation items: home, dashboard, settings
+- Generic errors and messages
+- Shared validation messages
+
+**Module Translations (modules/{ModuleName}/translations/):**
+- Feature-specific labels
+- Module-specific errors
+- Business logic messages
+- Domain-specific terminology
+
+**Naming Conventions:**
+- Use natural English sentences: `'Save'`, `'Create new product'`
+- Use the exact same English text throughout your app for consistency
+- Avoid abbreviations: `'Delete'` not `'Del'`
+- English text serves as both the UI text and the translation key
+
+**Supported Languages:**
+- `en`: English (default, no translation files needed)
+- `fr`: Français (French) - create `fr.json` files
+- `ar`: العربية (Arabic) - create `ar.json` files
+
+### Setup in Layouts
+
+The app should wrap routes with both providers:
+
+```typescript
+// app/layout.tsx or app/admin/layout.tsx
+import { LanguageProvider } from '@/src/shared/lib/language-context';
+import { TranslationProvider } from '@/src/shared/i18n';
+
+export default function Layout({ children }) {
+  return (
+    <LanguageProvider>
+      <TranslationProvider>
+        {children}
+      </TranslationProvider>
+    </LanguageProvider>
+  );
+}
+```
+
+### Additional Resources
+
+- `TRANSLATION_EXAMPLE.md`: Comprehensive usage guide with examples
+- `src/shared/i18n/`: Translation system implementation
+- `src/modules/UsersGuard/translations/`: Example module translations
 
 ## Existing Modules
 
@@ -189,9 +380,10 @@ export default function ProtectedPage() {
 Backend must allow `http://localhost:3000` origin with credentials support.
 
 ### Request Headers
-All tenant-specific requests include:
-- `X-Tenant-ID: {tenantId}`
+All API requests automatically include:
+- `X-Tenant-ID: {tenantId}` (when tenant context available)
 - `Authorization: Bearer {token}` (after login)
+- `Accept-Language: {locale}` (current language: fr, en, or ar)
 - `Content-Type: application/json`
 - `Accept: application/json`
 

@@ -18,8 +18,7 @@ export const LanguageSwitcher: React.FC = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setLanguage(e.target.value);
-    // Reload to fetch menus with new language
-    window.location.reload();
+    // Note: No reload needed - translations update automatically via React Context
   };
 
   return (

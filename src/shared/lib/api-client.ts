@@ -25,6 +25,20 @@ const getAuthToken = (): string | null => {
 };
 
 /**
+ * Récupérer la locale actuelle pour le header Accept-Language
+ * Retourne un format simple: fr, en, ar (pas fr_FR ou fr-FR)
+ */
+const getCurrentLocale = (): string => {
+    if (typeof window === 'undefined') return 'fr';
+
+    const locale = localStorage.getItem('app_language') || 'fr';
+
+    // S'assurer que la locale est au format simple (fr, en, ar)
+    // Convertir fr_FR -> fr, en_US -> en, etc.
+    return locale.split('_')[0].split('-')[0].toLowerCase();
+};
+
+/**
  * Nettoyer les tokens selon le contexte
  */
 const clearAuthData = (): void => {
@@ -63,12 +77,19 @@ export const createApiClient = (tenantId?: string): AxiosInstance => {
         withCredentials: true, // Important pour les cookies
     });
 
-    // Request interceptor to add auth token
+    // Request interceptor to add auth token and locale
     client.interceptors.request.use(
         (config: InternalAxiosRequestConfig) => {
-            const token = getAuthToken();
-            if (token && config.headers) {
-                config.headers.Authorization = `Bearer ${token}`;
+            if (config.headers) {
+                // Add auth token
+                const token = getAuthToken();
+                if (token) {
+                    config.headers.Authorization = `Bearer ${token}`;
+                }
+
+                // Add Accept-Language header with current locale
+                const locale = getCurrentLocale();
+                config.headers['Accept-Language'] = locale;
             }
             return config;
         },
